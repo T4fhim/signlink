@@ -4,3 +4,9 @@ export type { AssembleOptions, DetectedHand, Point, Presence, RawDetections } fr
 export { LandmarkPipeline } from "./pipeline.ts";
 export type { Delegate, FrameResult, PipelineOptions, StageTimings } from "./protocol.ts";
 export { RollingWindow, fpsFromTimestamps } from "./timing.ts";
+export {
+  MIN_SHOULDER_WIDTH,
+  normalizeFrame,
+  normalizeSequence,
+  shoulderIndices,
+} from "./normalize.ts";
