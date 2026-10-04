@@ -1,0 +1,43 @@
+[project]
+name = "signlnk-workspace"
+version = "0.0.0"
+description = "SignLnk monorepo (Python workspace root)"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = ["signlnk-ml", "signlnk-api"]
+
+[dependency-groups]
+dev = [
+  "mypy==2.4.0",
+  "pytest==9.1.1",
+  "ruff==0.16.10",
+  "pre-commit==4.6.2",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["ml", "services/api"]
+
+[tool.uv.sources]
+signlnk-ml = { workspace = true }
+signlnk-api = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "**/schemas_generated"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "N", "PL"]
+ignore = ["PLR2004"]
+
+[tool.pytest.ini_options]
+testpaths = ["ml/tests", "services/api/tests", "tests"]
+addopts = "-ra --strict-markers"
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+exclude = ["schemas_generated"]

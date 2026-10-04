@@ -1,0 +1,8 @@
+{
+  "name": "@signlnk/schemas",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "JSON Schemas (source of truth) and generated TypeScript types",
+  "type": "module"
+}

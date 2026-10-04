@@ -1,0 +1,16 @@
+# Dev stack. The API service is added in Phase 1 step 8.
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-signlnk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-signlnk_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-signlnk}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+volumes:
+  pgdata:

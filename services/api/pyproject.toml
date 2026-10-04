@@ -1,0 +1,14 @@
+[project]
+name = "signlnk-api"
+version = "0.0.0"
+description = "SignLnk API: lexicon, Studio, auth, bundles (Phase 1)"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = []
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["signlnk_api"]
