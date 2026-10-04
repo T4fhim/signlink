@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:signlnk:schema:landmark_layout:v1",
+  "title": "LandmarkLayoutV1",
+  "description": "Shape of a landmark layout document (which source landmarks make up the [T, N, 3] tensor). The concrete slk-landmarks-v1 index subset is frozen in Phase 0 step 3. Add fields only.",
+  "type": "object",
+  "required": ["layout_id", "n_landmarks", "groups"],
+  "properties": {
+    "layout_id": { "type": "string", "pattern": "^slk-landmarks-[a-z0-9.-]+$" },
+    "n_landmarks": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "N in the float32 [T, N, 3] tensor."
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/Group" },
+      "description": "Concatenated in order to form the N landmarks."
+    },
+    "anchors": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 },
+      "description": "Named indices into the output layout, e.g. left_shoulder and right_shoulder for normalization."
+    }
+  },
+  "$defs": {
+    "Group": {
+      "title": "Group",
+      "type": "object",
+      "required": ["name", "source", "indices"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "enum": ["hand_left", "hand_right", "pose", "face"] },
+        "indices": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "description": "Landmark indices in the MediaPipe Tasks output, in output order."
+        },
+        "legacy_holistic_indices": {
+          "type": "array",
+          "items": { "type": ["integer", "null"], "minimum": 0 },
+          "description": "Matching indices in the legacy Holistic layout (Kaggle ISLR); null where there is no counterpart. Same length as indices."
+        }
+      }
+    }
+  }
+}

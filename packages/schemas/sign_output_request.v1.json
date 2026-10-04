@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:signlnk:schema:sign_output_request:v1",
+  "title": "SignOutputRequestV1",
+  "description": "Request to render a gloss sequence as sign output. Add fields only; never rename or remove.",
+  "type": "object",
+  "required": ["lang", "glosses", "source_text"],
+  "properties": {
+    "lang": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}$",
+      "description": "Sign language code (ISO 639-3), read from config; never hard-coded."
+    },
+    "glosses": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "source_text": { "type": "string" }
+  }
+}
