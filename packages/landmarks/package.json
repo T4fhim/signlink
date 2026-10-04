@@ -1,0 +1,14 @@
+{
+  "name": "@signlnk/landmarks",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "MediaPipe Tasks wrapper and landmark normalization (mirrors ml/signlnk_ml/features)",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}
