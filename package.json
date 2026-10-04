@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "gen:types": "node scripts/gen-types.mjs",
-    "gen:types:check": "node scripts/gen-types.mjs --check"
+    "gen:types:check": "node scripts/gen-types.mjs --check",
+    "assets": "node scripts/fetch-mediapipe-assets.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

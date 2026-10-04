@@ -30,6 +30,16 @@ describe("schema contracts", () => {
     ]);
   });
 
+  it("validates every committed layout against landmark_layout.v1", () => {
+    const validate = makeAjv().compile(readJson(join(schemasDir, "landmark_layout.v1.json")));
+    const layouts = readdirSync(join(schemasDir, "layouts")).filter((f) => f.endsWith(".json"));
+    expect(layouts).toContain("slk-landmarks-v1.json");
+    for (const file of layouts) {
+      const layout = readJson(join(schemasDir, "layouts", file));
+      expect(validate(layout), `${file}: ${JSON.stringify(validate.errors)}`).toBe(true);
+    }
+  });
+
   describe.each(schemaFiles)("%s", (file) => {
     const schema = readJson(join(schemasDir, file));
     const example = readJson(join(schemasDir, "examples", file.replace(".json", ".example.json")));

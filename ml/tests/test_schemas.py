@@ -37,6 +37,14 @@ def test_all_five_schemas_present() -> None:
     ]
 
 
+def test_committed_layouts_validate_against_layout_schema() -> None:
+    validator = _validator("landmark_layout.v1.json")
+    layouts = sorted((SCHEMAS_DIR / "layouts").glob("*.json"))
+    assert [p.name for p in layouts] == ["slk-landmarks-v1.json"]
+    for path in layouts:
+        assert list(validator.iter_errors(_load(path))) == [], path.name
+
+
 @pytest.mark.parametrize("schema_file", SCHEMA_FILES)
 def test_example_validates(schema_file: str) -> None:
     errors = list(_validator(schema_file).iter_errors(_example(schema_file)))

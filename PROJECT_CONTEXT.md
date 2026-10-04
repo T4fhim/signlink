@@ -11,7 +11,7 @@ and non-signing users. Self-hostable, privacy-first, works without paid APIs.
 - Target sign language: **ASL (`ase`) only**. Pipeline stays language-agnostic (config value).
 - Spoken/written language pair: **ASL ↔ English (`en`)**
 - Deaf/signing advisors: **recruit ≥2 fluent Deaf ASL signers before the public demo** (none yet)
-- Hardware: **no local GPU assumed → Kaggle / Colab free tiers**; benchmark laptop: ___ (TBD)
+- Hardware: **no local GPU assumed → Kaggle / Colab free tiers**; benchmark laptop: **this machine** — i5-1135G7 (4C/8T), 15.7 GB, Iris Xe, Windows 11
 - Project license: **Apache-2.0 (code)**; models/data have their own license files
 - Commercial use: **not now, door open → two data tracks** (release = permissive only; research = NC allowed)
 - Phase 1 vocab: **20–50 meeting-relevant signs**, chosen by signer advisors
@@ -95,10 +95,12 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - Train/serve landmark mismatch (legacy Holistic vs Tasks face points) — parity test in Phase 0
 - Kaggle vocab may lack meeting signs — fill via Studio
 - No Deaf advisors yet — blocks public demo
-- Repo location: project folder is inside OneDrive; move repo outside OneDrive before scaffolding (pending)
+- Left/right hand agreement with the Holistic-extracted Kaggle data and Holistic↔Tasks face-index identity are both `[VERIFY]` in step 5 (ADR-0004)
 - Facial grammar coverage; avatar intelligibility; continuous segmentation
 
 ## Changelog
+- 2026-10-04 — Phase 0 steps 1–2 merged (PR #1, #2): monorepo, CI, five v1 schemas, TS+Pydantic generation with staleness check. Repo now at `C:\dev\signlnk` (outside OneDrive).
+- 2026-10-04 — Phase 0 step 3 built (branch `feat/phase0-landmarks`): `slk-landmarks-v1` N=146 (ADR-0004), MediaPipe worker pipeline, `/dev/landmarks` benchmark page. fps gate passed with a real signer: 35.1 fps, worker p95 56.6 ms (pose+face every 2nd frame). Handedness labels used as-is (a swap was wrong).
 - 2026-10-01 — Decisions filled; PLAN.md v1 and CLAUDE.md written; phase corrected to 0.
 - 2026-10-04 — Toolkit audited; `docs/TOOLKIT.md` added and linked from CLAUDE.md; ecc + engineering plugins active, qodo optional, miro off, no connectors needed.
 
