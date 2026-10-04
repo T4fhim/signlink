@@ -1,0 +1,44 @@
+# JS
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+
+# ML artifacts (models and data carry their own licenses; never commit raw data)
+data/
+mlruns/
+*.onnx
+*.pt
+*.ckpt
+*.parquet
+!tests/fixtures/**
+
+# Privacy: recordings are personal data
+recordings/
+*.webm
+*.mp4
+
+# Env / OS / editors
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Claude Code local settings
+.claude/settings.local.json
