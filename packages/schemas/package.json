@@ -6,6 +6,7 @@
   "description": "JSON Schemas (source of truth) and generated TypeScript types",
   "type": "module",
   "exports": {
+    "./layouts/*": "./layouts/*",
     "./*": "./generated/*.ts"
   },
   "scripts": {

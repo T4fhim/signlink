@@ -9,6 +9,11 @@
   "types": "src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "write-layout": "node scripts/write-layout.ts"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.0.1",
+    "@signlnk/schemas": "workspace:*"
   }
 }
