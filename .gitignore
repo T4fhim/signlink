@@ -45,3 +45,9 @@ desktop.ini
 
 # Next.js generated
 next-env.d.ts
+
+# MediaPipe assets are fetched at dev time (pnpm assets)
+apps/web/public/mediapipe/
+
+# Playwright MCP scratch output
+.playwright-mcp/

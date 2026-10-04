@@ -13,6 +13,8 @@ export default tseslint.config(
       "**/generated/**",
       "**/next-env.d.ts",
       "tests/fixtures/**",
+      "**/public/mediapipe/**",
+      ".playwright-mcp/**",
     ],
   },
   js.configs.recommended,

@@ -11,3 +11,6 @@ tests/fixtures
 # Authored markdown and workflows are formatted by hand
 *.md
 .github
+packages/schemas/layouts
+apps/web/public/mediapipe
+.playwright-mcp
