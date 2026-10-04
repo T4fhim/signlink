@@ -95,10 +95,12 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - Train/serve landmark mismatch (legacy Holistic vs Tasks face points) — parity test in Phase 0
 - Kaggle vocab may lack meeting signs — fill via Studio
 - No Deaf advisors yet — blocks public demo
+- numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+)
 - Left/right hand agreement with the Holistic-extracted Kaggle data and Holistic↔Tasks face-index identity are both `[VERIFY]` in step 5 (ADR-0004)
 - Facial grammar coverage; avatar intelligibility; continuous segmentation
 
 ## Changelog
+- 2026-10-04 — Phase 0 step 3 merged (PR #3). Step 4 built (branch `feat/phase0-normalization`): neck-centred, shoulder-width-scaled normalization in TS and Python, z kept, invalid frames all NaN (ADR-0005); parity ≤1e-5 on 3 golden fixtures, mutation-checked.
 - 2026-10-04 — Phase 0 steps 1–2 merged (PR #1, #2): monorepo, CI, five v1 schemas, TS+Pydantic generation with staleness check. Repo now at `C:\dev\signlnk` (outside OneDrive).
 - 2026-10-04 — Phase 0 step 3 built (branch `feat/phase0-landmarks`): `slk-landmarks-v1` N=146 (ADR-0004), MediaPipe worker pipeline, `/dev/landmarks` benchmark page. fps gate passed with a real signer: 35.1 fps, worker p95 56.6 ms (pose+face every 2nd frame). Handedness labels used as-is (a swap was wrong).
 - 2026-10-01 — Decisions filled; PLAN.md v1 and CLAUDE.md written; phase corrected to 0.

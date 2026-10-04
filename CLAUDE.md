@@ -24,10 +24,13 @@ Read `PROJECT_CONTEXT.md` and `docs/PLAN.md` before any task. Work only on the c
 
 ## Commands (keep this section updated as you create them)
 - `pnpm install && uv sync` — install
-- `pnpm dev` — web app
+- `pnpm dev` — web app (fetches MediaPipe WASM + models first; `pnpm assets` does just that)
 - `pnpm test` / `uv run pytest` — tests
-- `pnpm gen:types` — regenerate types from schemas
-- `docker compose up` — API + Postgres
+- `pnpm lint` / `pnpm typecheck` / `uv run ruff check . && uv run mypy ml services` — static checks
+- `pnpm gen:types` — regenerate types from schemas (`pnpm gen:types:check` fails if stale)
+- `pnpm --filter @signlnk/landmarks write-layout` — regenerate `slk-landmarks-v1` from MediaPipe
+- `uv run python -m signlnk_ml.features.golden_fixtures` — regenerate normalization golden fixtures
+- `docker compose up` — Postgres (API service arrives in Phase 1)
 
 ## Toolkit
 Agents, skills, MCPs and their phase status: `docs/TOOLKIT.md`. Use only ACTIVE items for the current phase.
