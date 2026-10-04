@@ -1,0 +1,13 @@
+{
+  "gloss": "THANK-YOU",
+  "gloss_id": "ase:THANK-YOU",
+  "confidence": 0.91,
+  "t_start": 12034,
+  "t_end": 12710,
+  "top_k": [
+    { "gloss_id": "ase:THANK-YOU", "p": 0.91 },
+    { "gloss_id": "ase:GOOD", "p": 0.05 }
+  ],
+  "model_version": "isr-0.3.1",
+  "lexicon_version": "2026.10.1"
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:signlnk:schema:recognition_output:v1",
+  "title": "RecognitionOutputV1",
+  "description": "One recognized sign emitted by the live decoder. Add fields only; never rename or remove.",
+  "type": "object",
+  "required": [
+    "gloss",
+    "gloss_id",
+    "confidence",
+    "t_start",
+    "t_end",
+    "top_k",
+    "model_version",
+    "lexicon_version"
+  ],
+  "properties": {
+    "gloss": { "type": "string", "minLength": 1, "description": "ID-gloss, e.g. THANK-YOU." },
+    "gloss_id": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}:.+$",
+      "description": "Language-qualified gloss id: <lang>:<ID-GLOSS>."
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "t_start": { "type": "integer", "minimum": 0, "description": "Sign start, ms." },
+    "t_end": { "type": "integer", "minimum": 0, "description": "Sign end, ms." },
+    "top_k": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/TopKEntry" },
+      "description": "Highest-probability candidates, best first."
+    },
+    "model_version": { "type": "string", "minLength": 1, "description": "SemVer, e.g. isr-0.3.1." },
+    "lexicon_version": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\.[0-9]{1,2}\\.[0-9]+$",
+      "description": "CalVer YYYY.MM.N."
+    }
+  },
+  "$defs": {
+    "TopKEntry": {
+      "title": "TopKEntry",
+      "type": "object",
+      "required": ["gloss_id", "p"],
+      "properties": {
+        "gloss_id": { "type": "string", "pattern": "^[a-z]{2,3}:.+$" },
+        "p": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

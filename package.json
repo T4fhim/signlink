@@ -14,13 +14,14 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "gen:types": "node scripts/gen-types.mjs",
-    "gen:types:check": "node scripts/gen-types.mjs && git diff --exit-code -- packages/schemas/generated ml/signlnk_ml/schemas_generated"
+    "gen:types:check": "node scripts/gen-types.mjs --check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "26.6.4",
     "eslint": "10.12.0",
     "globals": "17.13.0",
+    "json-schema-to-typescript": "16.0.0",
     "prettier": "3.9.9",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0",

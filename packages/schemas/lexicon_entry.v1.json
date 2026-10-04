@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:signlnk:schema:lexicon_entry:v1",
+  "title": "LexiconEntryV1",
+  "description": "One sign in the lexicon. Phonology field names follow ASL-LEX / Signbank coding concepts; no descriptive data is copied from them. Add fields only.",
+  "type": "object",
+  "required": [
+    "gloss_id",
+    "lang",
+    "id_gloss",
+    "variant",
+    "translations",
+    "status",
+    "license",
+    "revision"
+  ],
+  "properties": {
+    "gloss_id": { "type": "string", "pattern": "^[a-z]{2,3}:.+$" },
+    "lang": { "type": "string", "pattern": "^[a-z]{2,3}$" },
+    "id_gloss": { "type": "string", "minLength": 1 },
+    "variant": { "type": "integer", "minimum": 1 },
+    "translations": { "type": "array", "items": { "$ref": "#/$defs/Translation" } },
+    "phonology": { "$ref": "#/$defs/Phonology" },
+    "lexical_class": { "type": "string" },
+    "register_tags": { "type": "array", "items": { "type": "string" } },
+    "regional_tags": { "type": "array", "items": { "type": "string" } },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "in_review", "approved", "released", "rejected"]
+    },
+    "recognition": { "$ref": "#/$defs/Recognition" },
+    "clips": { "type": "array", "items": { "$ref": "#/$defs/Clip" } },
+    "external_refs": { "type": "array", "items": { "$ref": "#/$defs/ExternalRef" } },
+    "license": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 1 }
+  },
+  "$defs": {
+    "Translation": {
+      "title": "Translation",
+      "type": "object",
+      "required": ["lang", "text"],
+      "properties": {
+        "lang": { "type": "string", "pattern": "^[a-z]{2,3}$" },
+        "text": { "type": "string", "minLength": 1 },
+        "sense": { "type": "string" }
+      }
+    },
+    "Phonology": {
+      "title": "Phonology",
+      "type": "object",
+      "properties": {
+        "handshape_dom": { "type": ["string", "null"] },
+        "handshape_nondom": { "type": ["string", "null"] },
+        "sign_type": { "type": ["string", "null"] },
+        "location": { "type": ["string", "null"] },
+        "movement": { "type": ["string", "null"] },
+        "contact": { "type": ["boolean", "null"] },
+        "non_manual": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Recognition": {
+      "title": "Recognition",
+      "type": "object",
+      "required": ["enabled", "n_examples", "n_signers"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "n_examples": { "type": "integer", "minimum": 0 },
+        "n_signers": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Clip": {
+      "title": "Clip",
+      "type": "object",
+      "required": ["clip_id", "license", "signer_id"],
+      "properties": {
+        "clip_id": { "type": "string", "minLength": 1 },
+        "license": { "type": "string", "minLength": 1 },
+        "signer_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ExternalRef": {
+      "title": "ExternalRef",
+      "type": "object",
+      "required": ["source", "id", "url"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" }
+      }
+    }
+  }
+}

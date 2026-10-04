@@ -1,0 +1,31 @@
+{
+  "gloss_id": "ase:THANK-YOU",
+  "lang": "ase",
+  "id_gloss": "THANK-YOU",
+  "variant": 1,
+  "translations": [{ "lang": "en", "text": "thank you", "sense": "gratitude" }],
+  "phonology": {
+    "handshape_dom": "B",
+    "handshape_nondom": null,
+    "sign_type": "one-handed",
+    "location": "chin",
+    "movement": "away",
+    "contact": true,
+    "non_manual": ["smile"]
+  },
+  "lexical_class": "interjection",
+  "register_tags": ["everyday", "meetings"],
+  "regional_tags": [],
+  "status": "released",
+  "recognition": { "enabled": true, "n_examples": 42, "n_signers": 6 },
+  "clips": [{ "clip_id": "c_81", "license": "CC-BY-4.0", "signer_id": "s_12" }],
+  "external_refs": [
+    {
+      "source": "asl-signbank",
+      "id": "example-id",
+      "url": "https://example.org/signbank/example-id"
+    }
+  ],
+  "license": "CC-BY-4.0",
+  "revision": 7
+}

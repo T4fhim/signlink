@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:signlnk:schema:ws_message:v1",
+  "title": "WsMessageV1",
+  "description": "WebSocket envelope. Add fields only; never rename or remove.",
+  "type": "object",
+  "required": ["type", "session", "payload"],
+  "properties": {
+    "type": { "type": "string", "enum": ["caption", "gloss", "sign_seq"] },
+    "session": { "type": "string", "format": "uuid" },
+    "payload": { "type": "object", "description": "Shape depends on `type`." }
+  }
+}
