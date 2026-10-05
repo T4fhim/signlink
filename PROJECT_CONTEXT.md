@@ -55,7 +55,7 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 ## Datasets (verify license before use)
 | Dataset | License (as found) | Track |
 |---|---|---|
-| PopSign ASL / Kaggle ISLR (250 signs, landmarks) | CC BY 4.0 per authors; check Kaggle rules | Release |
+| Kaggle ISLR `asl-signs` (94,477 seqs, 250 signs, 21 signers) | Rules "Data Access and Use": any purpose incl. commercial + CC-By 4.0 (verified 2026-10-04; attribution required; see `docs/datasets.md`) | Release |
 | Own Studio recordings | Consent form, CC BY 4.0 | Release |
 | ASL Citizen | Microsoft research license, non-commercial | Research |
 | Sem-Lex | Unverified (assume NC) | Research |
@@ -100,6 +100,7 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - Facial grammar coverage; avatar intelligibility; continuous segmentation
 
 ## Changelog
+- 2026-10-04 — Phase 0 step 4 merged (PR #4). Step 5 built (branch `feat/phase0-islr`): Kaggle ISLR loader (Holistic → slk-landmarks-v1 via `legacy_holistic_indices`, identity), geometry checks, parity stats; 525-sequence sample (21 signers, 311 MB) in `D:\signlnk-data`; Kaggle licence verified (ADR-0006, `docs/datasets.md`). Serve-side parity waits for a `/dev/record` recording (step 6).
 - 2026-10-04 — Phase 0 step 3 merged (PR #3). Step 4 built (branch `feat/phase0-normalization`): neck-centred, shoulder-width-scaled normalization in TS and Python, z kept, invalid frames all NaN (ADR-0005); parity ≤1e-5 on 3 golden fixtures, mutation-checked.
 - 2026-10-04 — Phase 0 steps 1–2 merged (PR #1, #2): monorepo, CI, five v1 schemas, TS+Pydantic generation with staleness check. Repo now at `C:\dev\signlnk` (outside OneDrive).
 - 2026-10-04 — Phase 0 step 3 built (branch `feat/phase0-landmarks`): `slk-landmarks-v1` N=146 (ADR-0004), MediaPipe worker pipeline, `/dev/landmarks` benchmark page. fps gate passed with a real signer: 35.1 fps, worker p95 56.6 ms (pose+face every 2nd frame). Handedness labels used as-is (a swap was wrong).
