@@ -16,7 +16,7 @@ __pycache__/
 *.egg-info/
 
 # ML artifacts (models and data carry their own licenses; never commit raw data)
-data/
+/data/
 mlruns/
 *.onnx
 *.pt
