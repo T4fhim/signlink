@@ -93,7 +93,9 @@ def geometry_checks(
             right_wrist,
         ),
         "lips_below_nose": _fraction(lips[:, 1] > nose[:, 1], lips, nose),
-        "left_brow_above_left_eye": _fraction(left_brow[:, 1] < left_eye[:, 1], left_brow, left_eye),
+        "left_brow_above_left_eye": _fraction(
+            left_brow[:, 1] < left_eye[:, 1], left_brow, left_eye
+        ),
         "right_brow_above_right_eye": _fraction(
             right_brow[:, 1] < right_eye[:, 1], right_brow, right_eye
         ),
@@ -109,5 +111,7 @@ def geometry_checks(
             left_eye_ref,
             right_eye_ref,
         ),
-        "subject_left_is_image_right": _fraction(left_eye[:, 0] > right_eye[:, 0], left_eye, right_eye),
+        "subject_left_is_image_right": _fraction(
+            left_eye[:, 0] > right_eye[:, 0], left_eye, right_eye
+        ),
     }

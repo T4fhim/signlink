@@ -52,7 +52,9 @@ def read_sequence(path: Path) -> Array:
     known = np.zeros(len(types), dtype=bool)
     for legacy_type, offset in LEGACY_OFFSETS.items():
         mask = types == legacy_type
-        if mask.any() and (index[mask].min() < 0 or index[mask].max() >= LEGACY_COUNTS[legacy_type]):
+        if mask.any() and (
+            index[mask].min() < 0 or index[mask].max() >= LEGACY_COUNTS[legacy_type]
+        ):
             raise ValueError(f"{path.name}: {legacy_type} landmark_index out of range")
         out[frame_pos[mask], offset + index[mask]] = xyz[mask]
         known |= mask
@@ -76,7 +78,9 @@ def legacy_columns(layout: LandmarkLayoutV1) -> list[int | None]:
         offset = LEGACY_OFFSETS[SOURCE_TO_LEGACY_TYPE[group.source.value]]
         legacy = [_as_int(v) for v in group.legacy_holistic_indices]
         if len(legacy) != len(group.indices):
-            raise ValueError(f"layout group {group.name}: legacy and Tasks indices differ in length")
+            raise ValueError(
+                f"layout group {group.name}: legacy and Tasks indices differ in length"
+            )
         columns.extend(None if v is None else offset + v for v in legacy)
     return columns
 

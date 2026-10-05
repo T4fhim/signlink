@@ -1,4 +1,4 @@
-"""Browser recordings in slk-landmarks-v1: `.npy` float32 [T, N, 3], raw (un-normalized), NaN = missing.
+"""Browser recordings in slk-landmarks-v1: `.npy` float32 [T, N, 3], raw, NaN = missing.
 
 Recordings contain face landmarks, which can identify a person, so they stay on this machine under
 $SIGNLNK_DATA_DIR/serve-recordings (gitignored) and are never committed or uploaded.
