@@ -44,3 +44,7 @@ addopts = "-ra --strict-markers"
 strict = true
 python_version = "3.11"
 exclude = ["schemas_generated"]
+
+[[tool.mypy.overrides]]
+module = ["pyarrow", "pyarrow.*"]
+ignore_missing_imports = true

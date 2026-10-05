@@ -30,6 +30,8 @@ Read `PROJECT_CONTEXT.md` and `docs/PLAN.md` before any task. Work only on the c
 - `pnpm gen:types` — regenerate types from schemas (`pnpm gen:types:check` fails if stale)
 - `pnpm --filter @signlnk/landmarks write-layout` — regenerate `slk-landmarks-v1` from MediaPipe
 - `uv run python -m signlnk_ml.features.golden_fixtures` — regenerate normalization golden fixtures
+- `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.fetch_islr` — fetch the Kaggle ISLR sample (needs `uv tool install kaggle`, a token in `~/.kaggle/access_token`, rules accepted)
+- `SIGNLNK_DATA_DIR=D:\signlnk-data uv run pytest` — also runs the real-data train/serve parity tests (they skip without data)
 - `docker compose up` — Postgres (API service arrives in Phase 1)
 
 ## Toolkit

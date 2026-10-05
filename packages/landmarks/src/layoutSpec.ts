@@ -52,6 +52,11 @@ export function buildLayout(face: FaceConnectionSets): LandmarkLayoutV1 {
     { name: "face_nose_tip", source: "face", indices: [NOSE_TIP_INDEX] },
   ];
 
+  // Identity mapping to the legacy Holistic layout (Kaggle ISLR): hand, BlazePose and face-mesh
+  // numbering are shared. Checked on 116 Kaggle sequences (ADR-0006); the Tasks side is [VERIFY]
+  // with a real browser recording in the train/serve parity test.
+  for (const group of groups) group.legacy_holistic_indices = [...group.indices];
+
   const poseOffset = groups
     .slice(
       0,
