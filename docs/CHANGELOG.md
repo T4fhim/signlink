@@ -4,6 +4,7 @@ Newest first. One entry per session or merged step: what was built, where, measu
 (with method), follow-ups. `/session-close` adds entries. Moved out of PROJECT_CONTEXT.md on
 2026-10-05 so the always-loaded context stays small.
 
+- 2026-10-06 — Phase 0 gate (`/phase-gate 0`): steps 1–7 merged (PR #1–#7), CI green on main, 91 pytest tests passed locally with real-data parity. Closed with one caveat: landmark fps with a hand in view is 24.4 and 26.8 (Chrome 154, `landmark-benchmark2/3.json`), not the 35.1 quoted from a hand-free Electron run; carried to Phase 1 step 6. Reviews: `plan-reviewer` GAPS (fps; hand z span ~2× smaller in browser clips than Kaggle, `[VERIFY]`; docs lag), `license-auditor` no blockers (MediaPipe `.task` licences `[VERIFY]`, added to `docs/datasets.md`). Gate edits: `.claude/rules/api.md`, ML route in `prompt-router.mjs`, CLAUDE.md pruned, ADR-0001/0003 wording fixed, PLAN §5.1/§14/Phase 1 step 6 updated. Phase 1 PLAN edits proposed but not applied: CI on Python 3.11, advisor outreach step 0, split step 8 into 8a/8b, replace the Lighthouse PWA check.
 - 2026-10-06 — Step 6 merged (PR #6; fresh clip from a second camera passes parity). Step 7 (branch `feat/phase0-adrs`): ADR-0001 landmarks not pixels, ADR-0002 gloss layer, ADR-0003 two data tracks, status accepted; ADR-0003 notes the `track:` CI check is not built yet.
 - 2026-10-05 — Claude Code framework added after reading the Claude Code docs (best practices,
   run agents in parallel/subagents, hooks guide, skills, settings): `.claude/settings.json`

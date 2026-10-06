@@ -231,7 +231,7 @@ export interface SignRenderer {
 
 | Dataset | License (as found) | Track | Role |
 |---|---|---|---|
-| PopSign ASL / Kaggle ISLR | CC BY 4.0 per authors; Kaggle competition rules also apply **[VERIFY]** | Release | Phase 1 training and evaluation |
+| Kaggle ISLR (`asl-signs`; relation to PopSign ASL **[VERIFY]**) | Rules "Data Access and Use" + CC-By 4.0, see `docs/datasets.md`; live-page re-check **[VERIFY]** before release | Release | Phase 1 training and evaluation |
 | Own Studio recordings | Contributor consent, CC BY 4.0 | Release | Gap-filling vocabulary, test signers |
 | ASL Citizen | Microsoft research license, non-commercial | Research | Benchmarking, experiments |
 | Sem-Lex | **[VERIFY]**; assume non-commercial | Research | Phonology-auxiliary experiments |
@@ -327,7 +327,7 @@ Run each 🤖 step with `/step <phase.step>` (procedure: `docs/WORKFLOW.md` §3)
 3. 🤖 Baseline model: 1D conv + Transformer encoder over `[T, N, 3]`, with augmentation (mirror, rotate ±15°, scale, time-stretch, frame drop) and a "no sign / other" class. Train on Kaggle/Colab with MLflow or CSV logs. **Done when:** a top-1/top-5 report on the test signers exists.
 4. Iterate until ≥85% top-1 on unseen signers for the chosen vocabulary. If stuck, escalate to Opus with the training curves and confusion matrix.
 5. 🤖 Export to ONNX. Parity test: PyTorch vs onnxruntime-web logits (max abs diff ≤ 1e-4). Quantize (int8) only if it passes parity and accuracy drops <1 point.
-6. 🤖 Live decoder: sliding window, motion-energy endpointing, confidence threshold, debounce, and caption rendering. **Done when:** p95 sign-end → caption <500 ms on the benchmark laptop.
+6. 🤖 Live decoder: sliding window, motion-energy endpointing, confidence threshold, debounce, and caption rendering. **Done when:** p95 sign-end → caption <500 ms **and** ≥25 fps with inference running, on the benchmark laptop. Carried from Phase 0 step 3: with a hand in view, landmarking alone gave 24.4–26.8 fps (Chrome 154). First re-measure as a whole-run mean over ≥60 s with both hands signing, and run inference in its own worker.
 7. 🤖 PWA: manifest, service worker caching the model, MediaPipe WASM, and lexicon bundle; install prompt; offline mode. **Done when:** a Lighthouse PWA check passes and the demo works with the network off.
 8. 🤖 FastAPI service + Postgres + Docker Compose: auth, invites, lexicon CRUD, revisions, reviews, releases, bundle builder (§6).
 9. 🤖 Studio v1 UI (§6.3) at `/studio`.
@@ -445,7 +445,7 @@ Nothing shown to Deaf users is called "correct" without passing its gate. Sign-o
 - ~~Confirm `reference_aspect=0.78` on a different camera; write ADR-0001/0002/0003~~ — done 2026-10-06.
 - **[VERIFY]** Claude Code version ≥ v2.1.286 so the project `/verify` skill runs before commits (`claude --version`).
 - Recruit ≥2 Deaf ASL advisors; agree on compensation.
-- **[VERIFY]** Kaggle ISLR competition data terms; Sem-Lex dataset license; face landmark index mapping.
+- **[VERIFY]** Kaggle ISLR live Rules page (before release); Sem-Lex dataset license; face landmark index mapping; MediaPipe `.task` model licences (before Phase 1 step 7).
 - Choose the final project name (SignLnk is a working name).
 
 ---

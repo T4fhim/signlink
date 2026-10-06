@@ -28,10 +28,10 @@ Rules:
 ## Consequences
 
 - Research experiments stay cheap, and the release path stays clean.
-- Needs enforcement code: `ml/configs/` has no configs yet, so the `track:` check and the export refusal
-  (PLAN §5.1) are **not yet implemented**. A hook currently guards writes to `lexicon/core/` only
-  (`.claude/hooks/guard-paths.mjs`). Build the CI check when the first training config is added
-  (Phase 1 step 3).
+- Enforcement is partial. Two hooks exist: `stop-gate.mjs` blocks a training config that has no
+  `track:` line, and `guard-paths.mjs` guards writes to `lexicon/core/`. Not built yet, because
+  `ml/configs/` has no configs: the CI check that a release config uses only release-track datasets,
+  and the export refusal (PLAN §5.1). Build both with the first training config (Phase 1 step 3).
 - Re-check the Kaggle ISLR Rules page before the first public release (carried `[VERIFY]`).
 
 ## Verification

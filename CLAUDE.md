@@ -18,6 +18,7 @@ decisions and interfaces: @PROJECT_CONTEXT.md
 | Dataset, pretrained model, lexicon source | `/dataset-license`; `docs/datasets.md`; PLAN §5 |
 | ML code or training configs | `.claude/rules/ml.md` (auto); PLAN §7–8 |
 | Web app, capture, assets, networking | `.claude/rules/web-privacy.md` (auto); `apps/web/AGENTS.md`; then `privacy-reviewer` |
+| API service, Studio backend, auth, uploads | `.claude/rules/api.md` (auto); PLAN §6, §6.5 |
 | Lexicon, consent, review sign-offs | `.claude/rules/lexicon-data.md` (auto); PLAN §6, §9–10 |
 | New lasting decision | `/adr` |
 | Before any commit | `/verify` |
@@ -52,7 +53,6 @@ blocks, reminds or routes you, follow its message; never work around it.
 - Pin exact dependency versions (lockfiles committed); check current stable versions at install time.
 - pnpm (JS), uv (Python). Never edit `pnpm-lock.yaml`, `uv.lock` or generated types by hand.
 - Branches `feat/phase<P>-<slug>` from `main`; PR to `main`; Conventional Commits, one logical change each.
-- Decisions with lasting effect get an ADR in `docs/adr/` (`/adr`).
 
 ## Commands (keep this section updated as you create them)
 - `pnpm install && uv sync` — install (on Windows; the Cowork VM can't reach the npm registry)
@@ -86,7 +86,3 @@ blocks, reminds or routes you, follow its message; never work around it.
 - Anything Deaf users will see needs its community gate (PLAN §9) before it is called correct.
 - When compacting, always keep: the current step and its Done-when, files modified, commands run with
   results, open failures, and any `[VERIFY]` items.
-
-## End of every session
-Run `/session-close`. It prints a `Log to context:` block (one line per decision or change) and
-updates PROJECT_CONTEXT.md, docs/CHANGELOG.md and the Commands above.
