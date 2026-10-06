@@ -149,6 +149,7 @@ outgrows subagents. Parallel sessions multiply token use.
 | `ml.md` | `ml/**/*.py`, `ml/configs/**` |
 | `web-privacy.md` | `apps/web/**`, worker/pipeline/recorder/protocol, MediaPipe asset scripts |
 | `lexicon-data.md` | `lexicon/**`, `docs/datasets.md`, `docs/consent/**`, `docs/review/**` |
+| `api.md` | `services/**` |
 | `claude-config.md` | `.claude/**`, `CLAUDE.md`, `PROJECT_CONTEXT.md`, `docs/WORKFLOW.md`, `docs/TOOLKIT.md` |
 
 All hooks run as `node <script>` (exec form) so they work on Windows without jq or a shell.

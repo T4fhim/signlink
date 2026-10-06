@@ -7,17 +7,17 @@ Keep this file lean: it is imported into every Claude Code session through CLAUD
 Current state and decisions go here; history goes in the changelog.
 
 ## Current phase
-**Phase 0 — Setup, step 7 of 7** (branch `feat/phase0-adrs`): ADR-0001/0002/0003 written (status proposed), awaiting your OK, then PR and `/phase-gate 0`. Steps 1–6 merged (PR #1–#6; step 6 parity verified 2026-10-06 on a second camera). Next: Phase 1 — isolated signs + Studio v1.
+**Phase 1 — Isolated signs + Studio v1, not started.** Phase 0 closed 2026-10-06 (PR #1–#7) with one caveat: landmark fps with a hand in view is 24.4–26.8 (below/at the ≥25 target), carried to Phase 1 step 6. Next: Phase 1 step 1 (advisor outreach first) or step 2.
 
 | Phase 0 step | Status |
 |---|---|
 | 1 Monorepo + CI | ✅ PR #1 |
 | 2 Schemas + type generation | ✅ PR #2 |
-| 3 Landmarks worker, ≥25 fps | ✅ PR #3 — 35.1 fps, worker p95 56.6 ms on benchmark laptop |
+| 3 Landmarks worker, ≥25 fps | 🔶 PR #3 — 35.1 fps was a run with no hand in view (VS Code Electron); current build, Chrome 154, hand in view: 26.8 fps (622 frames) and 24.4 fps (2492 frames), `tests/landmarks/landmark-benchmark2/3.json`. Re-measure in Phase 1 step 6 |
 | 4 TS↔Py normalization parity | ✅ PR #4 — ≤1e-5 on 3 golden fixtures |
 | 5 Kaggle ISLR loader + parity stats | ✅ PR #5 |
 | 6 `/dev/record` round-trip + serve-side parity | ✅ PR #6 — parity passes on 7 clips incl. a fresh one from a second camera |
-| 7 ADR-0001/0002/0003 | 🔶 written (proposed), awaiting your OK |
+| 7 ADR-0001/0002/0003 | ✅ PR #7 — accepted 2026-10-06 |
 
 ## Mission
 Real-time, bidirectional, free/open-source communication bridge between signing
@@ -110,12 +110,16 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - 2026-10-05 — Hands assigned to the nearer pose wrist instead of MediaPipe's handedness label (wrong in ~7% of single-hand frames) (ADR-0008; supersedes ADR-0004's labels-as-is)
 - 2026-10-05 — Claude Code framework adopted: committed `.claude/` (settings, 5 hooks, 6 path-scoped rules, 4 subagents, 7 skills), procedures in `docs/WORKFLOW.md`, history in `docs/CHANGELOG.md`; repo is canonical, claude.ai project docs are mirrors
 - 2026-10-06 — ADR-0001 (landmarks not pixels), ADR-0002 (gloss layer), ADR-0003 (two data tracks) written and accepted
+- 2026-10-06 — Phase 0 closed with a caveat: the ≥25 fps target is not shown with a hand in view (24.4–26.8 fps, Chrome 154); carried to Phase 1 step 6 (re-measure whole-run mean, with inference running)
 
 ## Open questions / risks
 - `reference_aspect=0.78` calibrated on one webcam; one fresh clip from a second camera passes parity (2026-10-06). More cameras still welcome, not blocking
 - ADR-0003's CI `track:` check is not built yet (`ml/configs/` is empty); do it with the first training config (Phase 1 step 3)
 - Holistic↔Tasks face-index identity `[VERIFY]` (ADR-0004); hand side now follows the pose wrist (ADR-0008)
-- numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+)
+- Landmark fps with a hand in view is 24.4–26.8; Phase 1 step 6 must show ≥25 fps with inference running
+- Hand z span looks ~2× smaller in browser clips (0.035–0.062) than Kaggle (median 0.102) `[VERIFY]` on real signing; start with hand x/y or a z ablation
+- MediaPipe `.task` model licences unverified `[VERIFY]` before Phase 1 step 7 (`docs/datasets.md`)
+- numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+, but CI runs 3.12.3 and nothing tests 3.11)
 - Kaggle vocab may lack meeting signs — fill via Studio
 - No Deaf advisors yet — blocks public demo (G1)
 - Claude Code features used by the framework need recent versions (verify-before-commit v2.1.286, `/skill-doctor` v2.1.252) — `[VERIFY]` with `claude --version`

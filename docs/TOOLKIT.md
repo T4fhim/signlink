@@ -1,7 +1,7 @@
 # SignLnk — Toolkit & Standby Roster
-Audited 2026-10-05 (previous: 2026-10-04) · Current phase: **0 — Setup** · Re-audit at each phase boundary (`/phase-gate`).
+Audited 2026-10-06 (previous: 2026-10-05) · Current phase: **1 — Isolated signs + Studio v1** · Re-audit at each phase boundary (`/phase-gate`).
 
-Legend: ✅ **ACTIVE** (on standby now, Phase 0) · 🕒 **LATER** (phase noted) · ⚪ **OPTIONAL** · ⛔ **NOT NEEDED**
+Legend: ✅ **ACTIVE** (on standby now, Phase 1) · 🕒 **LATER** (phase noted) · ⚪ **OPTIONAL** · ⛔ **NOT NEEDED**
 
 Order of preference when two tools do the same job: **project `.claude/` item → built-in Claude Code
 command → plugin (ECC / engineering)**. Project items know SignLnk's rules; plugins don't.
@@ -35,7 +35,7 @@ reasoning: `docs/WORKFLOW.md` §8.
 | Hook | `session-context.mjs` (SessionStart) | Branch, dirty files, current phase; hard rules after compaction |
 | Hook | `stop-gate.mjs` (Stop) | Blocks on stale generated types or missing `track:` |
 | Hook | `prompt-router.mjs` (UserPromptSubmit) | Points a matching prompt to the right skill/subagent/gate; flags later-phase work |
-| Rules | `.claude/rules/{landmarks,schemas,ml,web-privacy,lexicon-data,claude-config}.md` | Path-scoped instructions that load only when matching files are read or edited (WORKFLOW §8) |
+| Rules | `.claude/rules/{landmarks,schemas,ml,web-privacy,lexicon-data,api,claude-config}.md` | Path-scoped instructions that load only when matching files are read or edited (WORKFLOW §8) |
 | Subagent | `plan-reviewer` (Opus) | Fresh-context review of a step vs Done-when, hard rules, scope |
 | Subagent | `privacy-reviewer` (Sonnet) | Egress, third-party scripts, storage, consent |
 | Subagent | `license-auditor` (Sonnet) | Dependency licences, data tracks, lexicon contamination |
@@ -49,7 +49,7 @@ reasoning: `docs/WORKFLOW.md` §8.
 | Skill | `/phase-gate <n>` | Phase-boundary review on Opus |
 | Personal | `.claude/settings.local.json` (gitignored) | Your overrides, e.g. `"env": {"SIGNLNK_DATA_DIR": "D:\\signlnk-data"}` |
 
-🕒 LATER project additions (create when the phase starts, not before — each description costs context):
+🕒 LATER project additions (create when the phase starts, not before — each description costs context). Phase 1 is now current: create `ml-eval-auditor` and `/train-run` when step 3 (baseline model) starts; `.claude/rules/api.md` already exists for step 8.
 `ml-eval-auditor` subagent (Phase 1: signer-independent splits, leakage, metric reporting),
 `/train-run` skill (Phase 1: Kaggle/Colab run checklist + `track:`), a11y review via the ECC agent (Phase 1 UI).
 

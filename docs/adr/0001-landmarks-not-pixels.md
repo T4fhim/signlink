@@ -9,8 +9,12 @@ The product must work on-device, offline, on a laptop with no discrete GPU (benc
 Iris Xe), and raw video must never leave the device (CLAUDE.md rule 2). Training uses free Kaggle/Colab
 tiers, and the main release-track dataset (Kaggle ISLR) is distributed as landmarks, not video.
 
-Measured in Phase 0 step 3 (PR #3): MediaPipe hand + pose + face in a Web Worker runs at 35.1 fps, worker
-p95 56.6 ms, on the benchmark laptop (target ≥ 25 fps, PLAN §2.2 budget ≤ 60 ms/frame).
+Measured on the benchmark laptop (target ≥ 25 fps, PLAN §2.2 budget ≤ 60 ms/frame), MediaPipe hand +
+pose + face in a Web Worker: 35.1 fps, worker p95 56.6 ms in Phase 0 step 3, but with no hand in view and
+in VS Code's Electron browser. Later runs on the current build in Chrome 154 with a hand in view gave
+26.8 fps (622 frames) and 24.4 fps (2492 frames), end-to-end p95 61.5 and 63 ms
+(`tests/landmarks/landmark-benchmark2.json`, `landmark-benchmark3.json`). Landmarking alone is at the
+target's edge; Phase 1 step 6 re-measures with inference running.
 
 ## Decision
 

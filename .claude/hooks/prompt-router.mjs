@@ -57,6 +57,10 @@ const ROUTES = [
     say: "Privacy-sensitive area (rule 2): raw video/audio and landmarks stay on device; ask `privacy-reviewer` to check the diff.",
   },
   {
+    re: /\b(training|train the|onnx|epochs?|checkpoint|fine-?tuning|top-?[15]|confusion matrix)\b/,
+    say: "ML work: `.claude/rules/ml.md` applies. Every training config declares `track:`, splits are signer-independent, and a metric needs its command, split and commit.",
+  },
+  {
     re: /\b(add|install|upgrade|bump) (a |the )?(dependency|package|library|lib)\b|\b(pnpm add|uv add|npm install)\b/,
     say: "New dependency (rule 1): free/OSS, known licence, pinned exactly; `license-auditor` if unsure. Dependency adds ask for approval.",
   },
