@@ -442,7 +442,7 @@ Nothing shown to Deaf users is called "correct" without passing its gate. Sign-o
 
 ## 14. Open items
 - ~~Name the benchmark laptop~~ — done 2026-10-04 (PROJECT_CONTEXT).
-- Confirm `reference_aspect=0.78` (ADR-0007) on a different camera; write ADR-0001/0002/0003 (Phase 0 step 7).
+- ~~Confirm `reference_aspect=0.78` on a different camera; write ADR-0001/0002/0003~~ — done 2026-10-06.
 - **[VERIFY]** Claude Code version ≥ v2.1.286 so the project `/verify` skill runs before commits (`claude --version`).
 - Recruit ≥2 Deaf ASL advisors; agree on compensation.
 - **[VERIFY]** Kaggle ISLR competition data terms; Sem-Lex dataset license; face landmark index mapping.

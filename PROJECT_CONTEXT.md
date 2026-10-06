@@ -17,7 +17,7 @@ Current state and decisions go here; history goes in the changelog.
 | 4 TS↔Py normalization parity | ✅ PR #4 — ≤1e-5 on 3 golden fixtures |
 | 5 Kaggle ISLR loader + parity stats | ✅ PR #5 |
 | 6 `/dev/record` round-trip + serve-side parity | ✅ PR #6 — parity passes on 7 clips incl. a fresh one from a second camera |
-| 7 ADR-0001/0002/0003 | ⬜ not started |
+| 7 ADR-0001/0002/0003 | 🔶 written (proposed), awaiting your OK |
 
 ## Mission
 Real-time, bidirectional, free/open-source communication bridge between signing
@@ -109,10 +109,11 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - 2026-10-05 — Landmarks expressed in `reference_aspect=0.78`, calibrated on 7 recordings from one webcam (ADR-0007)
 - 2026-10-05 — Hands assigned to the nearer pose wrist instead of MediaPipe's handedness label (wrong in ~7% of single-hand frames) (ADR-0008; supersedes ADR-0004's labels-as-is)
 - 2026-10-05 — Claude Code framework adopted: committed `.claude/` (settings, 5 hooks, 6 path-scoped rules, 4 subagents, 7 skills), procedures in `docs/WORKFLOW.md`, history in `docs/CHANGELOG.md`; repo is canonical, claude.ai project docs are mirrors
+- 2026-10-06 — ADR-0001 (landmarks not pixels), ADR-0002 (gloss layer), ADR-0003 (two data tracks) written, status proposed
 
 ## Open questions / risks
 - `reference_aspect=0.78` calibrated on one webcam; one fresh clip from a second camera passes parity (2026-10-06). More cameras still welcome, not blocking
-- ADR-0001/0002/0003 (Phase 0 step 7) not yet written
+- ADR-0003's CI `track:` check is not built yet (`ml/configs/` is empty); do it with the first training config (Phase 1 step 3)
 - Holistic↔Tasks face-index identity `[VERIFY]` (ADR-0004); hand side now follows the pose wrist (ADR-0008)
 - numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+)
 - Kaggle vocab may lack meeting signs — fill via Studio

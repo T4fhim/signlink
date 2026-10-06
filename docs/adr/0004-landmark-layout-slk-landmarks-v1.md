@@ -1,7 +1,7 @@
 # ADR-0004: Landmark layout `slk-landmarks-v1`
 
 Status: accepted · 2026-10-04 · Phase 0 step 3
-(ADR-0001 to 0003 are reserved for Phase 0 step 7: landmarks-not-pixels, gloss layer, data tracks.)
+(ADR-0001 to 0003 cover landmarks-not-pixels, the gloss layer and the data tracks.)
 
 ## Context
 
