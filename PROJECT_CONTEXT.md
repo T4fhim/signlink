@@ -7,7 +7,7 @@ Keep this file lean: it is imported into every Claude Code session through CLAUD
 Current state and decisions go here; history goes in the changelog.
 
 ## Current phase
-**Phase 0 — Setup, step 6 of 7** (branch `feat/phase0-record`, uncommitted): `/dev/record` built; serve-side parity passes with `reference_aspect=0.78` (ADR-0007) and wrist-based hand assignment (ADR-0008); still `[VERIFY]` on a different camera and fresh clips. Then step 7 (ADR-0001/2/3 not yet written) and `/phase-gate 0`. Next: Phase 1 — isolated signs + Studio v1.
+**Phase 0 — Setup, step 6 of 7** (branch `feat/phase0-record`, PR #6): `/dev/record` built; serve-side parity passes with `reference_aspect=0.78` (ADR-0007) and wrist-based hand assignment (ADR-0008); verified 2026-10-06 on a fresh clip from a second camera. Then step 7 (ADR-0001/2/3 not yet written) and `/phase-gate 0`. Next: Phase 1 — isolated signs + Studio v1.
 
 | Phase 0 step | Status |
 |---|---|
@@ -16,7 +16,7 @@ Current state and decisions go here; history goes in the changelog.
 | 3 Landmarks worker, ≥25 fps | ✅ PR #3 — 35.1 fps, worker p95 56.6 ms on benchmark laptop |
 | 4 TS↔Py normalization parity | ✅ PR #4 — ≤1e-5 on 3 golden fixtures |
 | 5 Kaggle ISLR loader + parity stats | ✅ PR #5 |
-| 6 `/dev/record` round-trip + serve-side parity | 🔶 built; parity passes on 6 clips (one webcam); different camera `[VERIFY]` |
+| 6 `/dev/record` round-trip + serve-side parity | ✅ PR #6 — parity passes on 7 clips incl. a fresh one from a second camera |
 | 7 ADR-0001/0002/0003 | ⬜ not started |
 
 ## Mission
@@ -111,7 +111,7 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - 2026-10-05 — Claude Code framework adopted: committed `.claude/` (settings, 5 hooks, 6 path-scoped rules, 4 subagents, 7 skills), procedures in `docs/WORKFLOW.md`, history in `docs/CHANGELOG.md`; repo is canonical, claude.ai project docs are mirrors
 
 ## Open questions / risks
-- `reference_aspect=0.78` calibrated on one webcam — `[VERIFY]` on a different camera and on fresh clips recorded with wrist assignment
+- `reference_aspect=0.78` calibrated on one webcam; one fresh clip from a second camera passes parity (2026-10-06). More cameras still welcome, not blocking
 - ADR-0001/0002/0003 (Phase 0 step 7) not yet written
 - Holistic↔Tasks face-index identity `[VERIFY]` (ADR-0004); hand side now follows the pose wrist (ADR-0008)
 - numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+)

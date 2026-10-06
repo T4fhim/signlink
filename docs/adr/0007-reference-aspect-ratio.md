@@ -66,8 +66,9 @@ their limits for every clip.
 
 ## Limits and follow-ups
 
-- **[VERIFY]** All recordings come from one webcam. A different camera (another lens, a 16:9 sensor)
-  may prefer a different effective value; test with one when available. The conversion itself uses
+- Checked 2026-10-06: a fresh clip (`recording-20261006-055409.npy`, 68 frames, current build) from a
+  second camera passes the serve-side parity limits. Further cameras (another lens, a 16:9 sensor)
+  may still prefer a different effective value; test with one when available. The conversion itself uses
   each frame's real size, so only the constant could move: change `REFERENCE_ASPECT` in
   `layoutSpec.ts`, run `write-layout` and `golden_fixtures`, and update the numbers in the aspect tests.
 - Vertical proportions vary about ±25% between Kaggle signers (eyes-to-lips / eye distance
