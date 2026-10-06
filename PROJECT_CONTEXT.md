@@ -1,7 +1,23 @@
 # SignLnk (working name) — Project Context
-Last updated: 2026-10-04
-Long-form plan: `docs/PLAN.md` (architecture, interfaces, Studio design, step-by-step build)
-Toolkit: `docs/TOOLKIT.md` (agents, skills, MCPs by phase status)
+Last updated: 2026-10-05
+Long-form plan: `docs/PLAN.md` · How we work with Claude: `docs/WORKFLOW.md` ·
+Toolkit: `docs/TOOLKIT.md` · History: `docs/CHANGELOG.md` · Datasets: `docs/datasets.md`
+
+Keep this file lean: it is imported into every Claude Code session through CLAUDE.md.
+Current state and decisions go here; history goes in the changelog.
+
+## Current phase
+**Phase 0 — Setup, step 6 of 7** (branch `feat/phase0-record`, uncommitted): `/dev/record` built; serve-side parity passes with `reference_aspect=0.78` (ADR-0007) and wrist-based hand assignment (ADR-0008); still `[VERIFY]` on a different camera and fresh clips. Then step 7 (ADR-0001/2/3 not yet written) and `/phase-gate 0`. Next: Phase 1 — isolated signs + Studio v1.
+
+| Phase 0 step | Status |
+|---|---|
+| 1 Monorepo + CI | ✅ PR #1 |
+| 2 Schemas + type generation | ✅ PR #2 |
+| 3 Landmarks worker, ≥25 fps | ✅ PR #3 — 35.1 fps, worker p95 56.6 ms on benchmark laptop |
+| 4 TS↔Py normalization parity | ✅ PR #4 — ≤1e-5 on 3 golden fixtures |
+| 5 Kaggle ISLR loader + parity stats | ✅ PR #5 |
+| 6 `/dev/record` round-trip + serve-side parity | 🔶 built; parity passes on 6 clips (one webcam); different camera `[VERIFY]` |
+| 7 ADR-0001/0002/0003 | ⬜ not started |
 
 ## Mission
 Real-time, bidirectional, free/open-source communication bridge between signing
@@ -18,9 +34,6 @@ and non-signing users. Self-hostable, privacy-first, works without paid APIs.
 - Install model: **one-sided** (works if only the Deaf user has the app)
 - First platform: **Chrome/Edge on Windows** → macOS → Linux
 - Capture consent: on-device only, visible indicator, chat notice, no recording by default
-
-## Current phase
-**Phase 0 — Setup** (not yet built). Next: Phase 1 — isolated signs + Studio v1.
 
 ## Roadmap
 | Phase | Goal | Done when |
@@ -51,8 +64,9 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 | Desktop | Tauri 2 (Phase 6) |
 | Sign output | Clips → pose-format sequences → Three.js glTF avatar |
 | Tracking | MLflow or CSV |
+| Dev assistant | Claude Code with project `.claude/` (settings, hooks, subagents, skills) — dev-time only, never a runtime dependency |
 
-## Datasets (verify license before use)
+## Datasets (verify license before use — `/dataset-license`)
 | Dataset | License (as found) | Track |
 |---|---|---|
 | Kaggle ISLR `asl-signs` (94,477 seqs, 250 signs, 21 signers) | Rules "Data Access and Use": any purpose incl. commercial + CC-By 4.0 (verified 2026-10-04; attribution required; see `docs/datasets.md`) | Release |
@@ -69,7 +83,7 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - New sign recognizable via prototypes when ≥10 examples from ≥3 signers.
 
 ## Interfaces (keep stable; schemas in `packages/schemas`)
-- Landmark frame: float32 `[T, N, 3]`, layout `slk-landmarks-v1` (hands 2×21 + upper-body pose subset + face subset), NaN = missing, centered on neck, scaled by shoulder width
+- Landmark frame: float32 `[T, N, 3]`, layout `slk-landmarks-v1` (N=146: hands 2×21 + upper-body pose subset + face subset, ADR-0004), NaN = missing, centered on neck, scaled by shoulder width (ADR-0005), coordinates in `reference_aspect` 0.78 (ADR-0007), hands assigned to the nearer pose wrist (ADR-0008)
 - Recognition output: `{gloss, gloss_id, confidence, t_start, t_end, top_k, model_version, lexicon_version}`
 - WebSocket: `{"type": "caption"|"gloss"|"sign_seq", "session": id, "payload": {...}}`
 - Lexicon entry: see PLAN §4.4
@@ -90,28 +104,28 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - 2026-10-01 — Delivery: web demo → PWA → Tauri; meeting integration via overlay/virtual cam/local audio/caption APIs; no bots
 - 2026-10-01 — Lexicon: own CC BY 4.0 core via Signer Studio; ASL-LEX/Signbank as references only
 - 2026-10-01 — Recognizer = encoder + classifier + prototypes (Studio signs without retraining)
+- 2026-10-04 — Repo at `C:\dev\signlnk` (outside OneDrive) on GitHub; one branch + PR per Phase step
+- 2026-10-04 — `slk-landmarks-v1` N=146, Holistic→Tasks identity mapping (ADR-0004, ADR-0006)
+- 2026-10-05 — Landmarks expressed in `reference_aspect=0.78`, calibrated on 7 recordings from one webcam (ADR-0007)
+- 2026-10-05 — Hands assigned to the nearer pose wrist instead of MediaPipe's handedness label (wrong in ~7% of single-hand frames) (ADR-0008; supersedes ADR-0004's labels-as-is)
+- 2026-10-05 — Claude Code framework adopted: committed `.claude/` (settings, 5 hooks, 6 path-scoped rules, 4 subagents, 7 skills), procedures in `docs/WORKFLOW.md`, history in `docs/CHANGELOG.md`; repo is canonical, claude.ai project docs are mirrors
 
 ## Open questions / risks
-- Train/serve landmark mismatch (legacy Holistic vs Tasks face points) — parity test in Phase 0
-- Kaggle vocab may lack meeting signs — fill via Studio
-- No Deaf advisors yet — blocks public demo
+- `reference_aspect=0.78` calibrated on one webcam — `[VERIFY]` on a different camera and on fresh clips recorded with wrist assignment
+- ADR-0001/0002/0003 (Phase 0 step 7) not yet written
+- Holistic↔Tasks face-index identity `[VERIFY]` (ADR-0004); hand side now follows the pose wrist (ADR-0008)
 - numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+)
-- Left/right hand agreement with the Holistic-extracted Kaggle data and Holistic↔Tasks face-index identity are both `[VERIFY]` in step 5 (ADR-0004)
+- Kaggle vocab may lack meeting signs — fill via Studio
+- No Deaf advisors yet — blocks public demo (G1)
+- Claude Code features used by the framework need recent versions (verify-before-commit v2.1.286, `/skill-doctor` v2.1.252) — `[VERIFY]` with `claude --version`
 - Facial grammar coverage; avatar intelligibility; continuous segmentation
-
-## Changelog
-- 2026-10-04 — Phase 0 step 4 merged (PR #4). Step 5 built (branch `feat/phase0-islr`): Kaggle ISLR loader (Holistic → slk-landmarks-v1 via `legacy_holistic_indices`, identity), geometry checks, parity stats; 525-sequence sample (21 signers, 311 MB) in `D:\signlnk-data`; Kaggle licence verified (ADR-0006, `docs/datasets.md`). Serve-side parity waits for a `/dev/record` recording (step 6).
-- 2026-10-04 — Phase 0 step 3 merged (PR #3). Step 4 built (branch `feat/phase0-normalization`): neck-centred, shoulder-width-scaled normalization in TS and Python, z kept, invalid frames all NaN (ADR-0005); parity ≤1e-5 on 3 golden fixtures, mutation-checked.
-- 2026-10-04 — Phase 0 steps 1–2 merged (PR #1, #2): monorepo, CI, five v1 schemas, TS+Pydantic generation with staleness check. Repo now at `C:\dev\signlnk` (outside OneDrive).
-- 2026-10-04 — Phase 0 step 3 built (branch `feat/phase0-landmarks`): `slk-landmarks-v1` N=146 (ADR-0004), MediaPipe worker pipeline, `/dev/landmarks` benchmark page. fps gate passed with a real signer: 35.1 fps, worker p95 56.6 ms (pose+face every 2nd frame). Handedness labels used as-is (a swap was wrong).
-- 2026-10-01 — Decisions filled; PLAN.md v1 and CLAUDE.md written; phase corrected to 0.
-- 2026-10-04 — Toolkit audited; `docs/TOOLKIT.md` added and linked from CLAUDE.md; ecc + engineering plugins active, qodo optional, miro off, no connectors needed.
 
 ---
 
 ## Appendix — Model and resource routing
-Opus 5.5: architecture, hard training/debugging, translation design, phase-boundary reviews.
-Sonnet 5.5: day-to-day coding, components, scripts, explanations. Haiku 4.5: lookups, small refactors.
-Claude Code: multi-file implementation, tests, repo management (see `CLAUDE.md`).
+Opus 5.5: architecture, hard training/debugging, translation design, phase-boundary reviews (`/phase-gate`, `plan-reviewer`).
+Sonnet 5.5: day-to-day coding, components, scripts, explanations (`privacy-reviewer`, `license-auditor`).
+Haiku 4.5: lookups, small refactors, test running (`test-runner`).
+Claude Code on Windows: multi-file implementation, tests, repo management (`docs/WORKFLOW.md` §1).
 Compute: landmarks + inference on CPU/browser; training on Kaggle/Colab free tiers.
-After each session: paste "Log to context:" lines here, update date and phase, re-upload.
+After each session: `/session-close` updates this file; re-upload changed docs to the claude.ai project.

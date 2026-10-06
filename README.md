@@ -16,3 +16,6 @@ uv run pytest     # Python tests
 ```
 
 Requires Node 24+, pnpm, and uv.
+
+Working with Claude Code: rules in `CLAUDE.md`, procedures in `docs/WORKFLOW.md`, project
+config (permissions, hooks, rules, subagents, skills) in `.claude/`.

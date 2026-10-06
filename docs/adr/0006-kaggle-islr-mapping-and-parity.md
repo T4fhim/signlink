@@ -69,10 +69,14 @@ the hand groups drops hand agreement below 0.2, so the tests can fail when they 
 
 ## What is not done yet
 
-- **Serve side.** The train/serve test is wired to `$SIGNLNK_DATA_DIR/serve-recordings/*.npy` and
-  skips until a browser recording exists; the `/dev/record` page (step 6) produces them. Until then
-  the Tasks-side face-index and hand-side semantics are only supported by the library's own
-  connection sets and the hand test in ADR-0004. **[VERIFY]**: run geometry checks and the face and
-  head parity limits on a real recording.
+- **Serve side: done on one camera.** The train/serve test reads
+  `$SIGNLNK_DATA_DIR/serve-recordings/*.npy` (not subfolders). On 2026-10-05, 8 clips from several people
+  on one 4:3 webcam were run through it: 6 usable distinct clips (one duplicate and one clip with
+  no face are set aside with a warning). Pooled geometry: every face, eye and orientation check
+  1.000, right hand 0.994, left hand 0.928 (label-based hand assignment, fixed in ADR-0008). Parity,
+  after the aspect correction (ADR-0007, reference aspect 0.78): face xy mean 0.054–0.111 (limit
+  0.20), head 0.055–0.081, xy std 0.062–0.075 (0.10), face z mean ≤ 0.045 and z std ≤ 0.021. The first, uncorrected recording
+  failed at 0.507, which exposed the aspect-ratio gap. **[VERIFY]**: a different camera, and fresh
+  clips made with the wrist-based hand assignment.
 - Recordings hold face landmarks, so they are personal data: local only, gitignored, never committed.
 - Aspect-ratio and Holistic-vs-Tasks z differences, if any, would show up in the same comparison.
