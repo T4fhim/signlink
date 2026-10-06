@@ -8,8 +8,7 @@ disable-model-invocation: true
 
 Existing ADRs: !`ls docs/adr`
 
-1. Pick the next free number (4 digits). Numbers 0001–0003 are reserved for the PLAN Phase 0
-   step 7 ADRs (landmarks not pixels, gloss layer, two data tracks) until they are written.
+1. Pick the next free number (4 digits). Numbers 0001–0003 are the Phase 0 step 7 ADRs (landmarks not pixels, gloss layer, two data tracks).
 2. Create `docs/adr/NNNN-<kebab-title>.md` following the style of the newest ADR:
 
 ```markdown
