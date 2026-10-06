@@ -1,0 +1,21 @@
+# Dataset registry: the machine-readable twin of docs/datasets.md and PLAN §5.1 (ADR-0003).
+# `track: release` data may feed a shipped model; `track: research` never. Keep both in sync.
+# Not under ml/configs/ on purpose: that folder holds training configs only.
+kaggle-islr:
+  track: release
+  licence: "Kaggle competition Rules 'Data Access and Use' + CC-By 4.0 (docs/datasets.md)"
+studio-recordings:
+  track: release
+  licence: "Contributor consent, CC BY 4.0; a research-only consent class makes a recording research track"
+asl-citizen:
+  track: research
+  licence: "Microsoft research licence, non-commercial"
+sem-lex:
+  track: research
+  licence: "[VERIFY] assumed non-commercial"
+wlasl:
+  track: research
+  licence: "Non-commercial"
+how2sign:
+  track: research
+  licence: "Non-commercial"
