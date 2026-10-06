@@ -10,7 +10,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "write-layout": "node scripts/write-layout.ts"
+    "write-layout": "node scripts/write-layout.ts",
+    "write-npy-fixture": "node scripts/write-npy-fixture.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.0.1",

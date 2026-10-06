@@ -1,5 +1,5 @@
 # SignLnk — Master Plan
-Version 1 · 2026-10-01 · Scope: **ASL (ase) ↔ English (en)** only
+Version 1.1 · 2026-10-05 (v1 2026-10-01; v1.1 adds the Claude Code workflow: §3, §7, §11, §13, §14, §15) · Scope: **ASL (ase) ↔ English (en)** only
 
 This is the long-form plan. `PROJECT_CONTEXT.md` is the short summary; when they disagree, update both.
 Items marked **[VERIFY]** are facts that must be checked against the source before relying on them.
@@ -103,10 +103,21 @@ Unknown words fall back to fingerspelling clips. This is a poor experience if us
 
 ```
 signlnk/
-├── CLAUDE.md                     # rules for Claude Code
-├── PROJECT_CONTEXT.md            # short context
+├── CLAUDE.md                     # rules for Claude Code (imports PROJECT_CONTEXT.md)
+├── PROJECT_CONTEXT.md            # short context: current phase, decisions, interfaces
+├── .claude/                      # committed Claude Code config (docs/WORKFLOW.md §8)
+│   ├── settings.json             # permission rules + hook registration
+│   ├── hooks/                    # guard-paths, post-edit, session-context, prompt-router, stop-gate (Node)
+│   ├── rules/                    # path-scoped rules: landmarks, schemas, ml, web-privacy, lexicon-data, claude-config
+│   ├── agents/                   # plan-reviewer, privacy-reviewer, license-auditor, test-runner
+│   └── skills/                   # /verify /step /session-close /schema-change /adr /dataset-license /phase-gate
 ├── docs/
 │   ├── PLAN.md                   # this file
+│   ├── WORKFLOW.md               # how we work with Claude: sessions, steps, verification
+│   ├── TOOLKIT.md                # agents, skills, MCPs by phase status
+│   ├── CHANGELOG.md              # history (moved out of PROJECT_CONTEXT.md)
+│   ├── datasets.md               # licence, version, track of every dataset
+│   ├── specs/                    # feature specs from the interview pattern (Phase 1+)
 │   ├── adr/                      # architecture decision records (0001-…)
 │   ├── consent/                  # recording consent form, contributor agreement
 │   └── review/                   # community review checklists and sign-offs
@@ -299,6 +310,8 @@ stateDiagram-v2
 
 Each step has a **Done when** check. Steps marked 🧑‍🤝‍🧑 need signer advisors. Steps marked 🤖 are best done in Claude Code.
 
+Run each 🤖 step with `/step <phase.step>` (procedure: `docs/WORKFLOW.md` §3). A step is done when its **Done when** has evidence (command output or a measured number with its method), `/verify` passes, and the `plan-reviewer` subagent reports no blockers. Current progress lives in `PROJECT_CONTEXT.md`, not here.
+
 ### Phase 0 — Setup and landmark pipeline
 1. 🤖 Create the monorepo per §3 with pnpm + uv, linters, pre-commit, and CI running lint + type-check + tests. **Done when:** CI passes on an empty skeleton.
 2. 🤖 Write JSON Schemas (§4) and generate TS + Pydantic types in CI. **Done when:** changing a schema without regenerating fails CI.
@@ -403,6 +416,7 @@ Nothing shown to Deaf users is called "correct" without passing its gate. Sign-o
 - CI: lint, type-check, unit tests, schema-generation check, normalization parity, ONNX parity, license-track check, Playwright smoke test of the demo.
 - Releases: model `isr-x.y.z` (SemVer), lexicon `YYYY.MM.N` (CalVer), app SemVer. A bundle manifest pins model + lexicon versions and checksums.
 - Self-hosting: `docker compose up` brings up API + Postgres + static web. Backups via `pg_dump` cron.
+- Local guardrails: committed `.claude/` hooks block hand edits to generated types, lockfiles and fetched assets, keep recordings and NC lexicon data out of the repo, and stop a turn when generated types are stale or a training config lacks `track:`. CI remains the authority and stays $0: no LLM or API key runs in CI.
 
 ---
 
@@ -421,13 +435,43 @@ Nothing shown to Deaf users is called "correct" without passing its gate. Sign-o
 ---
 
 ## 13. Routing
-- **Claude Code:** all 🤖 steps (multi-file, tests, repo).
-- **Opus 5.5:** phase-boundary reviews, model debugging, translation design (Phase 4), integration design (Phase 6).
-- **Sonnet 5.5:** components, scripts, explanations.
-- **Haiku 4.5:** small refactors, boilerplate.
+- **Claude Code:** all 🤖 steps (multi-file, tests, repo), via `/step`.
+- **Opus 5.5:** phase-boundary reviews (`/phase-gate`, `plan-reviewer`), model debugging, translation design (Phase 4), integration design (Phase 6).
+- **Sonnet 5.5:** components, scripts, explanations; `privacy-reviewer`, `license-auditor`.
+- **Haiku 4.5:** small refactors, boilerplate; `test-runner`.
 
 ## 14. Open items
-- Name the benchmark laptop (CPU, RAM, OS).
+- ~~Name the benchmark laptop~~ — done 2026-10-04 (PROJECT_CONTEXT).
+- Confirm `reference_aspect=0.78` (ADR-0007) on a different camera; write ADR-0001/0002/0003 (Phase 0 step 7).
+- **[VERIFY]** Claude Code version ≥ v2.1.286 so the project `/verify` skill runs before commits (`claude --version`).
 - Recruit ≥2 Deaf ASL advisors; agree on compensation.
 - **[VERIFY]** Kaggle ISLR competition data terms; Sem-Lex dataset license; face landmark index mapping.
 - Choose the final project name (SignLnk is a working name).
+
+---
+
+## 15. Development workflow with Claude Code
+
+How the project is built is part of the plan, because the hard rules (§0, CLAUDE.md) only hold if
+they are enforced every session. Full procedures: `docs/WORKFLOW.md`. Summary:
+
+| Layer | Holds | Enforcement |
+|---|---|---|
+| `CLAUDE.md` (+ imported `PROJECT_CONTEXT.md`) | Hard rules, commands, gotchas, current phase | Advisory; kept short so it is followed |
+| Rules (`.claude/rules/`) | Area-specific rules, loaded only when matching files are touched | Automatic by path |
+| Skills (`.claude/skills/`) | Procedures used sometimes: step, verify, session close, schema change, ADR, licence check, phase gate | Loaded on demand |
+| Subagents (`.claude/agents/`) | Fresh-context review and noisy work: plan, privacy, licence, tests | Delegated |
+| Hooks (`.claude/hooks/`) | Rules that must never slip | Deterministic |
+| CI + community gates | Final authority | Required for merge / for anything shown to Deaf users |
+
+Framework additions by phase (add when the phase starts, so unused descriptions don't cost context):
+
+| Phase | Add |
+|---|---|
+| 1 | `ml-eval-auditor` subagent (signer-independent splits, leakage, subgroup metrics); `/train-run` skill (Kaggle/Colab checklist, `track:`, logged metrics); a11y review in `/step` for UI steps; spec via the interview pattern for Studio v1 (`docs/specs/studio-v1.md`); worktrees for parallel API and training tracks |
+| 2 | Stop-hook check that WER reports name the test signers |
+| 3–4 | `/translation-eval` skill (sacreBLEU chrF/BLEU + human-review sheet); Opus for rule-based grammar design |
+| 5–6 | Rust reviewer for Tauri; release checklist skill (bundle manifest, licences, attribution) |
+
+Each phase boundary runs `/phase-gate <n>` on Opus: Done-when evidence, the community gate, plan
+review, CLAUDE.md pruning, toolkit re-audit and a licence re-check.

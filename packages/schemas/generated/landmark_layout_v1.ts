@@ -16,6 +16,10 @@ export interface LandmarkLayoutV1 {
    */
   groups: [Group, ...Group[]];
   /**
+   * Image aspect ratio (width / height) the coordinates are expressed in. MediaPipe normalizes x by width and y by height, so frames from another aspect ratio are rescaled: y' = y * reference_aspect / (width / height).
+   */
+  reference_aspect?: number;
+  /**
    * Named indices into the output layout, e.g. left_shoulder and right_shoulder for normalization.
    */
   anchors?: {

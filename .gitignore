@@ -22,6 +22,8 @@ mlruns/
 *.pt
 *.ckpt
 *.parquet
+*.npy
+*.npz
 !tests/fixtures/**
 
 # Privacy: recordings are personal data
@@ -42,6 +44,8 @@ desktop.ini
 
 # Claude Code local settings
 .claude/settings.local.json
+CLAUDE.local.md
+.claude/agent-memory-local/
 
 # Next.js generated
 next-env.d.ts

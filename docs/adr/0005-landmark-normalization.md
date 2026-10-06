@@ -39,7 +39,9 @@ store: `ml/signlnk_ml/features/normalize.py` (reference) and
 
 ## Known limitations
 
-- x and y are MediaPipe's normalized image coordinates, so on a non-square frame (for example 4:3)
+- **Resolved by ADR-0007** (the pipeline converts to a reference aspect before this transform; this
+  was confirmed as a real train/serve gap on 2026-10-05). Original note: x and y are MediaPipe's
+  normalized image coordinates, so on a non-square frame (for example 4:3)
   the x and y units differ and `width` mixes them. Kaggle ISLR is believed to use the same image-space
   coordinates with unknown aspect ratios **[VERIFY]** in step 5, so no correction is applied. Revisit
   if step 5 shows a distribution gap.
