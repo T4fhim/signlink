@@ -31,7 +31,7 @@ jobs:
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-      - run: uv sync --locked
+      - run: uv sync --locked --all-packages --extra train # CPU torch: model tests + mypy need it
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy ml services

@@ -8,7 +8,12 @@ dependencies = [
     "numpy==2.4.6",
     "pyarrow==25.0.1",
     "pydantic==2.13.5",
+    "pyyaml==6.0.3",
 ]
+
+[project.optional-dependencies]
+# Training only. CPU wheel locally (index in the workspace root); Kaggle/Colab bring their own torch.
+train = ["torch==2.14.1"]
 
 [build-system]
 requires = ["hatchling==1.32.4"]
