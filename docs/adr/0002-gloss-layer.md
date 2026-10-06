@@ -1,6 +1,6 @@
 # ADR-0002: Gloss layer as the shared intermediate representation
 
-Status: proposed · 2026-10-06 · Phase 0 step 7
+Status: accepted · 2026-10-06 · Phase 0 step 7
 Relates to PLAN §4.2 (recognition output), §4.4 (lexicon entry), §2.3 (Direction B).
 
 ## Context

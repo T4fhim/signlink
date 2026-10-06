@@ -1,6 +1,6 @@
 # ADR-0003: Two data tracks (release and research)
 
-Status: proposed · 2026-10-06 · Phase 0 step 7
+Status: accepted · 2026-10-06 · Phase 0 step 7
 Relates to PLAN §5, CLAUDE.md rule 4, `docs/datasets.md`.
 
 ## Context

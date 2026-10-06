@@ -1,6 +1,6 @@
 # ADR-0001: Recognition runs on landmarks, not pixels
 
-Status: proposed · 2026-10-06 · Phase 0 step 7
+Status: accepted · 2026-10-06 · Phase 0 step 7
 Underpins ADR-0004 (layout), ADR-0005 (normalization) and ADR-0007/0008 (serve-side parity).
 
 ## Context

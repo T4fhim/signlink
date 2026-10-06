@@ -4,7 +4,7 @@ Newest first. One entry per session or merged step: what was built, where, measu
 (with method), follow-ups. `/session-close` adds entries. Moved out of PROJECT_CONTEXT.md on
 2026-10-05 so the always-loaded context stays small.
 
-- 2026-10-06 — Step 6 merged (PR #6; fresh clip from a second camera passes parity). Step 7 (branch `feat/phase0-adrs`): ADR-0001 landmarks not pixels, ADR-0002 gloss layer, ADR-0003 two data tracks, status proposed; ADR-0003 notes the `track:` CI check is not built yet.
+- 2026-10-06 — Step 6 merged (PR #6; fresh clip from a second camera passes parity). Step 7 (branch `feat/phase0-adrs`): ADR-0001 landmarks not pixels, ADR-0002 gloss layer, ADR-0003 two data tracks, status accepted; ADR-0003 notes the `track:` CI check is not built yet.
 - 2026-10-05 — Claude Code framework added after reading the Claude Code docs (best practices,
   run agents in parallel/subagents, hooks guide, skills, settings): `.claude/settings.json`
   (permissions allow/ask/deny + 4 hooks), hooks `guard-paths`, `post-edit`, `session-context`,
