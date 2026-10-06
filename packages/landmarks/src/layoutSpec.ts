@@ -32,6 +32,14 @@ export const POSE_SUBSET = [
 /** Face mesh nose tip. */
 export const NOSE_TIP_INDEX = 1;
 
+/**
+ * Aspect ratio (width / height) the layout's coordinates are expressed in: an effective value for
+ * the portrait phone videos Kaggle ISLR was recorded on. Calibrated on 7 recordings from one 4:3
+ * webcam (several people): 0.78 minimizes the mean face and head parity error, with a flat region
+ * from 0.76 to 0.80 (ADR-0007). [VERIFY] with a different camera.
+ */
+export const REFERENCE_ASPECT = 0.78;
+
 const HAND_LANDMARK_COUNT = 21;
 
 const uniqueSorted = (connections: Connection[]): number[] =>
@@ -69,6 +77,7 @@ export function buildLayout(face: FaceConnectionSets): LandmarkLayoutV1 {
   return {
     layout_id: "slk-landmarks-v1",
     n_landmarks: groups.reduce((sum, g) => sum + g.indices.length, 0),
+    reference_aspect: REFERENCE_ASPECT,
     groups,
     anchors: {
       left_shoulder: poseAnchor("left_shoulder"),

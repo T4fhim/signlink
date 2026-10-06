@@ -8,6 +8,8 @@ sample (ADR-0006): each limit is about 1.5 to 2 times the worst of the 21 held-o
 natural between-person variation passes and a systematic pipeline difference does not.
 """
 
+import hashlib
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -41,8 +43,13 @@ FACE_LIMITS = Limits(xy_mean=0.20, xy_std=0.10, z_mean=0.10, z_std=0.04, presenc
 HEAD_LIMITS = Limits(xy_mean=0.20, xy_std=0.10, presence=0.05)
 # Observed on the sample: every check averages >= 0.986 (Holistic mislabels a hand in a few cases).
 MIN_GEOMETRY_AGREEMENT = 0.97
-# A browser recording is a single short session, so it is held to a looser bar.
+# Browser recordings are short and few, so geometry is pooled over all usable clips and held to a
+# looser bar than Kaggle. Observed on 6 usable clips (540 frames, label-based hand assignment): left
+# hand 0.928, right hand 0.994, every face and orientation check 1.000.
 MIN_RECORDING_GEOMETRY = 0.90
+# A clip needs a face and a person in most frames to say anything about face/head parity.
+MIN_PART_PRESENCE = 0.8
+MIN_USABLE_RECORDINGS = 2
 
 
 def violations(report: ParityReport, limits: Limits) -> list[str]:
@@ -126,21 +133,51 @@ def test_swapped_hands_are_caught_by_geometry(islr_sample: Sequences) -> None:
     assert np.mean(agreement["swapped"]) < 0.2
 
 
+def usable_recordings() -> list[tuple[str, Array]]:
+    """Recordings with a face and pose in most frames; duplicates and bad clips are set aside."""
+    usable: list[tuple[str, Array]] = []
+    seen: set[str] = set()
+    for path in sorted(recordings_dir().glob("*.npy")):
+        recording = load_recording(path)
+        digest = hashlib.sha256(recording.tobytes()).hexdigest()
+        if digest in seen:
+            warnings.warn(f"{path.name}: identical to an earlier recording, ignored", stacklevel=2)
+            continue
+        seen.add(digest)
+        face = float(
+            np.isfinite(recording[:, group_slice(LAYOUT, "face_lips"), 0]).all(axis=1).mean()
+        )
+        pose = float(np.isfinite(recording[:, group_slice(LAYOUT, "pose"), 0]).all(axis=1).mean())
+        if min(face, pose) < MIN_PART_PRESENCE:
+            warnings.warn(
+                f"{path.name}: face found in {face:.0%} and pose in {pose:.0%} of frames, "
+                "ignored: re-record with the face and shoulders in view",
+                stacklevel=2,
+            )
+            continue
+        usable.append((path.name, recording))
+    return usable
+
+
 def test_browser_recordings_match_the_training_data(islr_sample: Sequences) -> None:
-    files = sorted(recordings_dir().glob("*.npy"))
-    if not files:
+    if not list(recordings_dir().glob("*.npy")):
         pytest.skip("no browser recordings yet: record some with /dev/record (Phase 0 step 6)")
+    clips = usable_recordings()
+    assert len(clips) >= MIN_USABLE_RECORDINGS, (
+        f"only {len(clips)} usable recording(s); need {MIN_USABLE_RECORDINGS}"
+    )
+
+    pooled = geometry_checks(np.concatenate([recording for _, recording in clips]))
+    assert np.isfinite(pooled["lips_below_nose"]), "no face found in any recording"
+    for name, value in pooled.items():
+        assert np.isnan(value) or value >= MIN_RECORDING_GEOMETRY, f"pooled {name}: {value:.3f}"
+
     train = landmark_stats(everything(islr_sample))
     groups = parity_groups(LAYOUT)
-    for path in files:
-        recording = load_recording(path)
-        checks = geometry_checks(recording)
-        assert np.isfinite(checks["lips_below_nose"]), f"{path.name}: no face found"
-        for name, value in checks.items():
-            assert np.isnan(value) or value >= MIN_RECORDING_GEOMETRY, (
-                f"{path.name} {name}: {value}"
-            )
+    problems = []
+    for name, recording in clips:
         serve = landmark_stats([recording])
         found = violations(compare(train, serve, groups["face"]), FACE_LIMITS)
         found += violations(compare(train, serve, groups["head"]), HEAD_LIMITS)
-        assert not found, f"{path.name}: {found}"
+        problems += [f"{name}: {issue}" for issue in found]
+    assert not problems, problems

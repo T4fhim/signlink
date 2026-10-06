@@ -18,6 +18,11 @@
       "items": { "$ref": "#/$defs/Group" },
       "description": "Concatenated in order to form the N landmarks."
     },
+    "reference_aspect": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Image aspect ratio (width / height) the coordinates are expressed in. MediaPipe normalizes x by width and y by height, so frames from another aspect ratio are rescaled: y' = y * reference_aspect / (width / height)."
+    },
     "anchors": {
       "type": "object",
       "additionalProperties": { "type": "integer", "minimum": 0 },

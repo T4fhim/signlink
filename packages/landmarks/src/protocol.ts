@@ -13,6 +13,8 @@ export interface PipelineOptions {
   poseEvery?: number;
   /** Run face on every Nth frame, reusing the last result in between. Default 1. */
   faceEvery?: number;
+  /** See AssembleOptions.handAssignment. Default "wrist". */
+  handAssignment?: "wrist" | "label";
   /** See AssembleOptions.swapHandedness. Default false. */
   swapHandedness?: boolean;
 }

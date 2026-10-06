@@ -10,3 +10,7 @@ export {
   normalizeSequence,
   shoulderIndices,
 } from "./normalize.ts";
+export { decodeNpy, encodeNpy } from "./npy.ts";
+export { Recorder } from "./recorder.ts";
+export type { RecordingSummary } from "./recorder.ts";
+export { aspectScale, toReferenceAspect } from "./aspect.ts";

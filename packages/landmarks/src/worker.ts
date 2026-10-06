@@ -4,6 +4,7 @@ import {
   HandLandmarker,
   PoseLandmarker,
 } from "@mediapipe/tasks-vision";
+import { toReferenceAspect } from "./aspect.ts";
 import { assembleFrame, type Point, type RawDetections } from "./frame.ts";
 import { LAYOUT } from "./layout.ts";
 import type { Delegate, FromWorker, StageTimings, ToWorker } from "./protocol.ts";
@@ -95,6 +96,7 @@ function processFrame(id: number, t: number, bitmap: ImageBitmap): void {
   }
   const afterFace = performance.now();
   s.frameIndex += 1;
+  const { width, height } = bitmap;
   bitmap.close();
 
   const raw: RawDetections = {
@@ -106,8 +108,11 @@ function processFrame(id: number, t: number, bitmap: ImageBitmap): void {
     face: s.lastFace,
   };
   const { frame, present } = assembleFrame(raw, LAYOUT, {
+    handAssignment: s.options.handAssignment,
     swapHandedness: s.options.swapHandedness,
   });
+  // Express y in the layout's reference aspect so frames match the training data (ADR-0007).
+  toReferenceAspect(frame, width, height);
   const timingsMs: StageTimings = {
     hand: afterHand - started,
     pose: afterPose - afterHand,

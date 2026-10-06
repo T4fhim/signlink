@@ -15,9 +15,11 @@ import math
 import numpy as np
 import numpy.typing as npt
 
+from signlnk_ml.features.aspect import to_reference_aspect
 from signlnk_ml.features.normalize import REPO_ROOT, load_layout, normalize, shoulder_indices
 
 FIXTURE_DIR = REPO_ROOT / "tests" / "fixtures" / "normalization"
+ASPECT_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "aspect" / "cases.json"
 SEED = 20261004
 
 
@@ -95,12 +97,35 @@ def build() -> dict[str, dict[str, object]]:
     }
 
 
+def build_aspect() -> list[dict[str, object]]:
+    """Aspect-conversion cases: one random clip with dropout, converted from several image sizes."""
+    layout = load_layout()
+    left, right = shoulder_indices(layout)
+    clip = random_clip(layout.n_landmarks, left, right)[:3]
+    sizes = [(640, 480), (1280, 720), (480, 640), (780, 1000)]  # 4:3, 16:9, 3:4, 0.78 (reference)
+    return [
+        {
+            "name": f"{width}x{height}",
+            "width": width,
+            "height": height,
+            "shape": list(clip.shape),
+            "input": _flat(clip),
+            "expected": _flat(to_reference_aspect(clip, width, height, layout)),
+        }
+        for width, height in sizes
+    ]
+
+
 def main() -> None:
     FIXTURE_DIR.mkdir(parents=True, exist_ok=True)
     for name, fixture in build().items():
         path = FIXTURE_DIR / f"{name}.json"
         path.write_text(json.dumps(fixture, separators=(",", ":"), allow_nan=False) + "\n")
         print(f"wrote {path.relative_to(REPO_ROOT)}")
+    ASPECT_FIXTURE.parent.mkdir(parents=True, exist_ok=True)
+    cases = json.dumps(build_aspect(), separators=(",", ":"), allow_nan=False)
+    ASPECT_FIXTURE.write_text(cases + "\n")
+    print(f"wrote {ASPECT_FIXTURE.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,42 @@
+{
+  "when": "2026-10-06T05:20:22.509Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "logicalCores": 8,
+  "options": {
+    "delegate": "GPU",
+    "usedDelegate": "GPU",
+    "poseEvery": 2,
+    "faceEvery": 2
+  },
+  "targetFps": 25,
+  "frames": 2492,
+  "fps": 24.439834876962337,
+  "endToEndMs": {
+    "p50": 42,
+    "p95": 63
+  },
+  "stageMs": {
+    "hand": {
+      "p50": 25.699999928474426,
+      "p95": 30.90000009536743
+    },
+    "pose": {
+      "p50": 0.10000002384185791,
+      "p95": 17.299999952316284
+    },
+    "face": {
+      "p50": 0,
+      "p95": 17.100000023841858
+    },
+    "total": {
+      "p50": 41.60000002384186,
+      "p95": 62.60000002384186
+    }
+  },
+  "present": {
+    "leftHand": true,
+    "rightHand": false,
+    "pose": true,
+    "face": true
+  }
+}

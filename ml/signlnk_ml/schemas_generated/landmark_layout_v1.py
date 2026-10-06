@@ -53,6 +53,11 @@ class LandmarkLayoutV1(BaseModel):
     groups: list[Group] = Field(
         ..., description='Concatenated in order to form the N landmarks.', min_length=1
     )
+    reference_aspect: float | None = Field(
+        None,
+        description="Image aspect ratio (width / height) the coordinates are expressed in. MediaPipe normalizes x by width and y by height, so frames from another aspect ratio are rescaled: y' = y * reference_aspect / (width / height).",
+        gt=0.0,
+    )
     anchors: dict[str, Anchors] | None = Field(
         None,
         description='Named indices into the output layout, e.g. left_shoulder and right_shoulder for normalization.',

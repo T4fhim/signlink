@@ -19,6 +19,7 @@ export class LandmarkPipeline {
       delegate: "GPU",
       poseEvery: 1,
       faceEvery: 1,
+      handAssignment: "wrist",
       swapHandedness: false,
       ...options,
     };

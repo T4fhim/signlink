@@ -1,6 +1,7 @@
 {
   "layout_id": "slk-landmarks-v1",
   "n_landmarks": 146,
+  "reference_aspect": 0.78,
   "groups": [
     {
       "name": "hand_left",
