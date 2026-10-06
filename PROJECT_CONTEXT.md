@@ -7,7 +7,7 @@ Keep this file lean: it is imported into every Claude Code session through CLAUD
 Current state and decisions go here; history goes in the changelog.
 
 ## Current phase
-**Phase 1 — Isolated signs + Studio v1, not started.** Phase 0 closed 2026-10-06 (PR #1–#7) with one caveat: landmark fps with a hand in view is 24.4–26.8 (below/at the ≥25 target), carried to Phase 1 step 6. Next: Phase 1 step 1 (advisor outreach first) or step 2.
+**Phase 1 — Isolated signs + Studio v1, step 3 built, awaiting its Kaggle/Colab run** (branch `feat/phase1-baseline`). Step 2 (splits) merged, PR #9. Step 3 code, tests and a CPU smoke run are done; its Done-when (top-1/top-5 report on the test signers) needs the full-data run in `docs/training.md`. Phase 0 closed 2026-10-06 with one caveat: landmark fps with a hand in view is 24.4–26.8, carried to Phase 1 step 6. Next: the Kaggle run, then step 4 (iterate); advisor outreach (step 1) still open.
 
 | Phase 0 step | Status |
 |---|---|
