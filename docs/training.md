@@ -43,6 +43,34 @@ PYTHONPATH=ml python -m signlnk_ml.training.train --config ml/configs/baseline.y
 
 Colab works the same way with the competition data downloaded through the Kaggle CLI.
 
+## Step 4 sweep: one change at a time
+
+`--set section.key=value` overrides any config value without a new file (repeatable; values are YAML).
+The cache is reused between runs as long as the `window` settings do not change. One Kaggle cell
+(`%%bash` must be its first line, and the `cd` makes `PYTHONPATH=ml` resolve; adjust it to where you cloned):
+
+```
+%%bash
+cd /kaggle/working/signlnk
+D=/kaggle/input/competitions/asl-signs; C=/kaggle/working/cache; R=/kaggle/working/runs
+run() { name=$1; shift; PYTHONPATH=ml python -m signlnk_ml.training.train --data-dir $D --cache-dir $C --out-dir $R/$name "$@"; }
+run baseline
+run velocity --set input.velocity=true
+run z        --set input.use_z=true
+run big      --set model.d_model=256 --set model.n_layers=4
+run dropout  --set model.dropout=0.3
+run augment  --set augment.rotate_degrees=25 --set "augment.scale_range=[0.8,1.25]" --set augment.drop_probability=0.2
+PYTHONPATH=ml python -m signlnk_ml.training.compare $R/*
+```
+
+Each run takes about as long as the baseline run did (epoch time is **[VERIFY]**, not in the logs), so
+check that budget before starting all six. `compare` ranks on **val** top-1 and shows test only for
+reference: a configuration chosen by its test score turns the test signers into a second validation
+set. Combine the changes that helped on val into one final run, then read its test score once.
+Every report now has the train top-1 (no augmentation) too: a low train top-1 means the model does
+not fit (more capacity, longer training); a high train top-1 with a low val top-1 means it does not
+transfer to new signers (more augmentation, regularisation, better features).
+
 ## What the report contains
 
 Top-1 and top-5 on the val and test participants, per-participant top-1 (lowest signer shown), top-1
@@ -55,4 +83,8 @@ The test participants are scored once, after training, and never used to choose 
   negatives later.
 - Mirroring drops the face (no verified left/right face pairing); hands and pose are swapped properly.
 - Inputs are x, y only (`input.use_z: false`) until the browser/Kaggle hand z difference is settled.
-- Vocabulary is all 250 Kaggle signs; the advisors' list (G0) narrows it later.
+- Vocabulary is all 250 Kaggle signs; the advisors' list (G0) narrows it later. Nothing yet restricts
+  training or evaluation to a subset of signs: build that once the list exists.
+- If `input.velocity` is kept, the serving side (ONNX export, live decoder) must compute the same frame
+  differences, or they must go inside the exported graph.
+- Val and test have 3 signers each: treat val differences of about 1 point between runs as ties.
