@@ -7,7 +7,7 @@ Keep this file lean: it is imported into every Claude Code session through CLAUD
 Current state and decisions go here; history goes in the changelog.
 
 ## Current phase
-**Phase 1 — Isolated signs + Studio v1, not started.** Phase 0 closed 2026-10-06 (PR #1–#7) with one caveat: landmark fps with a hand in view is 24.4–26.8 (below/at the ≥25 target), carried to Phase 1 step 6. Next: Phase 1 step 1 (advisor outreach first) or step 2.
+**Phase 1 — Isolated signs + Studio v1, step 3 done, PR #10 open** (branch `feat/phase1-baseline`). Step 2 (splits) merged, PR #9. Step 3 report from the full Kaggle run (`docs/reports/phase1-baseline-kaggle.md`, commit `6876f76`): test top-1 0.469 / top-5 0.673, val top-1 0.607 / top-5 0.828 over 250 signs, far below the ≥85% target of step 4. Phase 0 closed 2026-10-06 with one caveat: landmark fps with a hand in view is 24.4–26.8, carried to Phase 1 step 6. Next: step 4 (iterate toward ≥85%); advisor outreach (step 1) still open.
 
 | Phase 0 step | Status |
 |---|---|

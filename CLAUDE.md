@@ -69,6 +69,8 @@ blocks, reminds or routes you, follow its message; never work around it.
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.fetch_islr` — fetch the Kaggle ISLR sample (needs `uv tool install kaggle`, a token in `~/.kaggle/access_token`, rules accepted)
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run pytest` — also runs the real-data train/serve parity tests (they skip without data)
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.splits --check` — assert zero signer overlap between train/val/test (committed split: `ml/splits/kaggle-islr-v1.json`; `--write` only for a new split version)
+- `uv sync --all-packages --extra train` — also install CPU torch for training (plain `uv sync` removes it); training/Kaggle recipe: `docs/training.md`
+- `uv run python -m signlnk_ml.training.train --cache-dir <dir> --out-dir <dir> [--sample] [--epochs N]` — train the baseline and write the signer-independent report (`--sample` = local pipeline check)
 - `docker compose up` — Postgres (API service arrives in Phase 1)
 
 ## Gotchas

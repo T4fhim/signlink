@@ -1,0 +1,36 @@
+# Phase 1 step 3 baseline: all 250 Kaggle ISLR signs + an 'other' (no sign) class.
+# Engineering baseline; the vocabulary is narrowed to the advisors' list (G0) later.
+track: release
+datasets: [kaggle-islr]
+pretrained: []
+splits: ml/splits/kaggle-islr-v1.json
+
+window:
+  length: 64 # frames after nearest-frame resampling (sample median is 21 frames, 525 sequences)
+  other_min_run: 8 # a hands-absent run this long becomes an 'other' window
+  other_ratio: 2.0 # at most this many times the average sign class size
+
+input:
+  use_z: false # browser hand z span differs from Kaggle's ([VERIFY]); x, y only until settled
+
+model:
+  d_model: 128
+  n_layers: 3
+  n_heads: 4
+  embedding_dim: 256
+  dropout: 0.1
+
+augment:
+  mirror_probability: 0.5
+  rotate_degrees: 15.0
+  scale_range: [0.9, 1.1]
+  stretch_range: [0.8, 1.25]
+  drop_probability: 0.1
+
+train:
+  epochs: 30
+  batch_size: 256
+  lr: 0.001
+  weight_decay: 0.01
+  label_smoothing: 0.1
+  seed: 1

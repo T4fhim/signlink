@@ -53,5 +53,12 @@ them from our own origin). If none exists, download them at first run instead of
 
 ## Not yet downloaded
 
+Own Studio recordings (release track) have no data yet. Contributors consent under CC BY 4.0; a
+research-only consent class makes a recording research track. Record the consent form version and
+the first recording date here when Studio v1 produces data.
+
 ASL Citizen, Sem-Lex, WLASL and How2Sign are research-track (see PLAN §5.1) and have no entries
 until they are used. Record the licence, version and download date here when they are.
+
+The machine-readable twin of this file is `ml/datasets.yaml`; the training-config check (ADR-0003)
+reads it. Edit both together.

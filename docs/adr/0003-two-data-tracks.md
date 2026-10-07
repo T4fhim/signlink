@@ -29,13 +29,16 @@ Rules:
 
 - Research experiments stay cheap, and the release path stays clean.
 - Enforcement is partial. Two hooks exist: `stop-gate.mjs` blocks a training config that has no
-  `track:` line, and `guard-paths.mjs` guards writes to `lexicon/core/`. Not built yet, because
-  `ml/configs/` has no configs: the CI check that a release config uses only release-track datasets,
-  and the export refusal (PLAN §5.1). Build both with the first training config (Phase 1 step 3).
+  `track:` line, and `guard-paths.mjs` guards writes to `lexicon/core/`. Added in Phase 1 step 3
+  (2026-10-06): the dataset registry `ml/datasets.yaml`, and `check_config` in
+  `ml/signlnk_ml/training/config.py` (a release config may use only release-track datasets and
+  pretrained sources; run by `train.py` and by `ml/tests/test_training_config.py` in CI). Not built
+  yet: the export refusal (PLAN §5.1), which arrives with the ONNX export (Phase 1 step 5).
 - Re-check the Kaggle ISLR Rules page before the first public release (carried `[VERIFY]`).
 
 ## Verification
 
 - Today: `docs/datasets.md` lists track per dataset; `license-auditor` on PR #6 found no research data
   in any release path.
-- Phase 1: a test that fails when a release config references a research dataset.
+- Phase 1 step 3: `test_training_config.py` fails when a release config references a research-track
+  or unregistered dataset or pretrained source.

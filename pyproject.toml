@@ -15,6 +15,7 @@ dev = [
   "datamodel-code-generator==0.83.0",
   "jsonschema==4.26.0",
   "types-jsonschema==4.26.0.20260518",
+  "types-pyyaml==6.0.12.20260906",
 ]
 
 [tool.uv]
@@ -26,6 +27,13 @@ members = ["ml", "services/api"]
 [tool.uv.sources]
 signlnk-ml = { workspace = true }
 signlnk-api = { workspace = true }
+torch = { index = "pytorch-cpu" }
+
+# CPU-only wheels: no CUDA packages (NVIDIA EULA) in the lockfile.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.ruff]
 line-length = 100
