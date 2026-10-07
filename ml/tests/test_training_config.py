@@ -8,6 +8,7 @@ from signlnk_ml.features.normalize import REPO_ROOT
 from signlnk_ml.training.config import (
     CONFIGS_DIR,
     REGISTRY_PATH,
+    apply_overrides,
     check_config,
     load_config,
     load_registry,
@@ -79,6 +80,36 @@ def test_baseline_config_loads_with_expected_choices() -> None:
     assert cfg.window.length == 64 and cfg.model.embedding_dim == 256
     assert (REPO_ROOT / cfg.splits).exists()
     assert cfg.input.use_z is False  # hand z span differs from Kaggle (PROJECT_CONTEXT [VERIFY])
+
+
+def test_overrides_change_typed_values_without_touching_the_file() -> None:
+    cfg = load_config(
+        CONFIGS_DIR / "baseline.yaml",
+        overrides=[
+            "model.d_model=256",
+            "input.velocity=true",
+            "train.lr=0.0005",
+            "augment.scale_range=[0.8,1.2]",
+        ],
+    )
+    assert cfg.model.d_model == 256 and cfg.input.velocity is True
+    assert cfg.train.lr == 0.0005 and cfg.augment.scale_range == (0.8, 1.2)
+    assert load_config(CONFIGS_DIR / "baseline.yaml").model.d_model == 128
+
+
+def test_an_override_with_an_unknown_key_or_bad_syntax_is_rejected() -> None:
+    with pytest.raises(ValueError, match="epochz"):
+        load_config(CONFIGS_DIR / "baseline.yaml", overrides=["train.epochz=3"])
+    with pytest.raises(ValueError, match="key=value"):
+        load_config(CONFIGS_DIR / "baseline.yaml", overrides=["model.d_model"])
+
+
+def test_overrides_cannot_smuggle_research_data_into_a_release_config() -> None:
+    raw = apply_overrides(
+        yaml.safe_load((CONFIGS_DIR / "baseline.yaml").read_text(encoding="utf-8")),
+        ["datasets=[kaggle-islr, asl-citizen]"],
+    )
+    assert check_config(raw, load_registry(REGISTRY_PATH))
 
 
 def test_unknown_config_keys_are_rejected(tmp_path: Path) -> None:

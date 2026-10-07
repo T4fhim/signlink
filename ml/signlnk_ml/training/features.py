@@ -42,11 +42,24 @@ def hands_absent_runs(
     return runs
 
 
-def make_input(window: Array, use_z: bool) -> Array:
-    """[T, N, 3] -> [T, N * d + N]: coordinates (NaN -> 0) then a 1/0 'landmark present' mask."""
+def input_dim(n_landmarks: int, use_z: bool, velocity: bool = False) -> int:
+    """Width of `make_input`'s rows."""
+    coords = n_landmarks * (3 if use_z else 2)
+    return coords + n_landmarks + (coords if velocity else 0)
+
+
+def make_input(window: Array, use_z: bool, velocity: bool = False) -> Array:
+    """[T, N, 3] -> [T, F]: coordinates (NaN -> 0), a 1/0 'landmark present' mask per landmark and,
+    with `velocity`, frame-to-frame differences (0 where either frame lacks the landmark)."""
     coords = window if use_z else window[..., :2]
-    present = np.isfinite(coords).all(axis=-1)
+    present = np.asarray(np.isfinite(coords).all(axis=-1), dtype=bool)
     clean = np.where(np.isfinite(coords), coords, 0.0).astype(np.float32)
     frames = window.shape[0]
-    out: Array = np.concatenate([clean.reshape(frames, -1), present.astype(np.float32)], axis=1)
+    parts = [clean.reshape(frames, -1), present.astype(np.float32)]
+    if velocity:
+        delta = np.zeros_like(clean)
+        both = (present[1:] & present[:-1])[..., None]
+        delta[1:] = (clean[1:] - clean[:-1]) * both
+        parts.append(delta.reshape(frames, -1))
+    out: Array = np.concatenate(parts, axis=1)
     return out

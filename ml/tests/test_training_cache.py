@@ -6,11 +6,13 @@ from signlnk_ml.data.geometry import group_slice, pose_position
 from signlnk_ml.data.kaggle_islr import LEGACY_OFFSETS, LEGACY_TOTAL, to_slk_v1
 from signlnk_ml.features.normalize import load_layout
 from signlnk_ml.training.cache import (
+    cache_mismatches,
     cap_other,
     other_windows,
     select_indices,
     sequence_to_window,
 )
+from signlnk_ml.training.config import CONFIGS_DIR, load_config
 
 LAYOUT = load_layout()
 N = LAYOUT.n_landmarks
@@ -71,6 +73,15 @@ def test_select_indices_is_a_sorted_deterministic_subset() -> None:
     assert len(set(a.tolist())) == 10 and a.tolist() == sorted(a.tolist())
     assert select_indices(5, 10, seed=4).tolist() == [0, 1, 2, 3, 4]
     assert a.tolist() != select_indices(100, 10, seed=5).tolist()
+
+
+def test_cache_mismatches_reports_settings_the_cache_was_not_built_with() -> None:
+    cfg = load_config(CONFIGS_DIR / "baseline.yaml")
+    meta = {"length": 64, "other_min_run": 8, "other_ratio": 2.0}
+    assert cache_mismatches(meta, cfg) == []
+    problems = cache_mismatches({**meta, "length": 32}, cfg)
+    assert len(problems) == 1 and "length" in problems[0]
+    assert cache_mismatches({"length": 64}, cfg)  # an old cache without the settings is rebuilt
 
 
 def test_resample_length_must_be_positive() -> None:

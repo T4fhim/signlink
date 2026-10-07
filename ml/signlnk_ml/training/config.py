@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+import copy
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any, TypeVar
@@ -28,6 +29,7 @@ class WindowSettings:
 @dataclass(frozen=True)
 class InputSettings:
     use_z: bool = False
+    velocity: bool = False
 
 
 @dataclass(frozen=True)
@@ -79,8 +81,28 @@ SECTIONS: dict[str, type[Any]] = {
 }
 
 
-def load_config(path: Path) -> TrainConfig:
+def apply_overrides(raw: Mapping[str, Any], overrides: Sequence[str]) -> dict[str, Any]:
+    """Applies `section.key=value` overrides (values parsed as YAML) to a copy of a raw config."""
+    out: dict[str, Any] = copy.deepcopy(dict(raw))
+    for item in overrides:
+        key, separator, text = item.partition("=")
+        if not separator or not key:
+            raise ValueError(f"override must look like key=value, got {item!r}")
+        *parents, leaf = key.split(".")
+        node = out
+        for part in parents:
+            node = node.setdefault(part, {})
+        node[leaf] = yaml.safe_load(text)
+    return out
+
+
+def load_raw(path: Path, overrides: Sequence[str] = ()) -> dict[str, Any]:
     raw: dict[str, Any] = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return apply_overrides(raw, overrides)
+
+
+def load_config(path: Path, overrides: Sequence[str] = ()) -> TrainConfig:
+    raw = load_raw(path, overrides)
     unknown = sorted(set(raw) - set(SECTIONS) - {"track", "datasets", "pretrained", "splits"})
     if unknown:
         raise ValueError(f"{path.name}: unknown key(s) {unknown}")

@@ -57,6 +57,20 @@ def cap_other(available: int, n_sign_windows: int, n_sign_classes: int, ratio: f
     return min(available, round(ratio * n_sign_windows / n_sign_classes))
 
 
+def cache_mismatches(meta: Mapping[str, Any], cfg: TrainConfig) -> list[str]:
+    """Window settings a cached split was not built with (an old cache must be rebuilt)."""
+    wanted = {
+        "length": cfg.window.length,
+        "other_min_run": cfg.window.other_min_run,
+        "other_ratio": cfg.window.other_ratio,
+    }
+    return [
+        f"cache has {key}={meta.get(key)} but the config wants {value}"
+        for key, value in wanted.items()
+        if meta.get(key) != value
+    ]
+
+
 def select_indices(n: int, k: int, seed: int) -> npt.NDArray[np.intp]:
     """A sorted, seeded random subset of range(n) of size min(k, n)."""
     if k >= n:
@@ -119,6 +133,8 @@ def build_split_cache(  # noqa: PLR0913, PLR0917
         "n_signs": n,
         "n_other": len(keep),
         "length": cfg.window.length,
+        "other_min_run": cfg.window.other_min_run,
+        "other_ratio": cfg.window.other_ratio,
         "n_classes": n_signs + 1,
         "other_index": other_index,
     }

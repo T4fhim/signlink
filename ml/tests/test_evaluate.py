@@ -2,7 +2,13 @@
 
 import numpy as np
 import pytest
-from signlnk_ml.training.evaluate import per_participant_top1, report, topk_accuracy
+from signlnk_ml.training.evaluate import (
+    per_participant_top1,
+    report,
+    top_confusions,
+    topk_accuracy,
+    worst_classes,
+)
 
 SCORES = np.array(
     [
@@ -43,6 +49,38 @@ def test_report_has_overall_numbers_signers_and_the_other_class() -> None:
     assert result["min_participant_top1"] == 0.5
     # two 'other' windows (label 3); one is predicted as sign 0, one correctly as 'other'
     assert result["n_other"] == 2 and result["false_activation_rate"] == pytest.approx(0.5)
+
+
+DIAG_LABELS = np.array([0, 0, 1, 1, 1, 2])
+DIAG_PREDICTED = np.array([0, 1, 1, 1, 0, 2])
+DIAG_SCORES = np.eye(3)[DIAG_PREDICTED]
+
+
+def test_worst_classes_ranks_by_top1_and_ignores_tiny_classes() -> None:
+    worst = worst_classes(DIAG_SCORES, DIAG_LABELS, k=3, min_n=2)
+    assert [w["class"] for w in worst] == [0, 1]  # class 2 has one window only
+    assert worst[0] == {"class": 0, "top1": 0.5, "n": 2}
+    assert worst[1]["top1"] == pytest.approx(2 / 3) and worst[1]["n"] == 3
+
+
+def test_top_confusions_lists_wrong_pairs_by_count() -> None:
+    labels = np.array([0, 0, 0, 1, 1, 2])
+    predicted = np.array([1, 1, 0, 0, 1, 2])
+    pairs = top_confusions(np.eye(3)[predicted], labels, k=5)
+    assert pairs == [
+        {"true": 0, "predicted": 1, "count": 2},
+        {"true": 1, "predicted": 0, "count": 1},
+    ]
+
+
+def test_top_confusions_is_empty_for_a_perfect_model() -> None:
+    assert top_confusions(np.eye(3)[[0, 1, 2]], np.array([0, 1, 2]), k=5) == []
+
+
+def test_report_carries_the_diagnostics() -> None:
+    result = report(DIAG_SCORES, DIAG_LABELS, np.array(["a"] * 6))
+    assert result["worst_classes"][0]["class"] == 0
+    assert result["top_confusions"][0]["count"] == 1
 
 
 def test_false_activation_rate_counts_other_windows_predicted_as_a_sign() -> None:
