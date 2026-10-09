@@ -29,6 +29,7 @@ from signlnk_ml.data.fetch_islr import data_dir
 from signlnk_ml.data.kaggle_islr import load_sign_map
 from signlnk_ml.data.splits import SPLIT_NAMES, load_assignment
 from signlnk_ml.features.normalize import REPO_ROOT, load_layout
+from signlnk_ml.training.analyze import save_scores
 from signlnk_ml.training.augment import Augmenter
 from signlnk_ml.training.cache import build_split_cache, cache_mismatches, load_split, read_rows
 from signlnk_ml.training.config import (
@@ -152,7 +153,7 @@ def markdown(result: dict[str, Any], run: dict[str, Any], names: dict[int, str])
     return "\n".join(lines)
 
 
-def main() -> None:
+def main() -> None:  # noqa: PLR0915
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
     parser.add_argument("--config", type=Path, default=REPO_ROOT / "ml/configs/baseline.yaml")
     parser.add_argument("--cache-dir", type=Path, required=True)
@@ -214,10 +215,13 @@ def main() -> None:
     torch.save({k: v.cpu() for k, v in model.state_dict().items()}, args.out_dir / "model.pt")
 
     result: dict[str, Any] = {}
+    saved: dict[str, Any] = {}
     for split in ("val", "test"):
         windows, labels, participants, _ = splits[split]
         scores = predict(model, WindowSource(windows, labels, use_z, velocity=velocity))
         result[split] = report(scores, labels, participants, other_index)
+        saved[split] = (scores, labels, participants)
+    save_scores(args.out_dir / "scores.npz", saved)  # for offline analysis (see `analyze`)
 
     # Train accuracy on a fixed random subset, without augmentation: separates "does not fit"
     # (underfitting) from "fits but does not transfer to new signers" (overfitting).
