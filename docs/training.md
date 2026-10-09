@@ -71,6 +71,33 @@ Every report now has the train top-1 (no augmentation) too: a low train top-1 me
 not fit (more capacity, longer training); a high train top-1 with a low val top-1 means it does not
 transfer to new signers (more augmentation, regularisation, better features).
 
+## Seeds, ensemble and vocabulary-subset analysis
+
+Every run now also saves `scores.npz` (val and test softmax scores, about 7 MB each). That lets the
+laptop answer three questions without another Kaggle run. Three runs of the same config with different
+seeds (one Kaggle cell, same shape as the sweep above):
+
+```
+%%bash
+cd /kaggle/working/signlnk
+D=/kaggle/input/competitions/asl-signs; C=/kaggle/working/cache; R=/kaggle/working/runs
+run() { name=$1; shift; PYTHONPATH=ml python -m signlnk_ml.training.train --data-dir $D --cache-dir $C --out-dir $R/$name "$@"; }
+run seed1 --set train.seed=1
+run seed2 --set train.seed=2
+run seed3 --set train.seed=3
+```
+
+Download each run's `scores.npz` (and `report.md`) into one folder per run, then on the laptop:
+
+```
+uv run python -m signlnk_ml.training.analyze <dir>\seed1 <dir>\seed2 <dir>\seed3 --confusion test_confusion.csv
+```
+
+It prints top-1 per run and for the averaged **ensemble**, and top-1 when only a random subset of 20, 50
+or 100 signs is kept (mean, 10th percentile and best of 200 draws). The spread between seeds is the
+real run-to-run noise. Subset scores are a proxy for a chosen vocabulary: the model was trained on all
+250 signs and a random subset is not the advisors' list.
+
 ## What the report contains
 
 Top-1 and top-5 on the val and test participants, per-participant top-1 (lowest signer shown), top-1

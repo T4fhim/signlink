@@ -72,6 +72,7 @@ blocks, reminds or routes you, follow its message; never work around it.
 - `uv sync --all-packages --extra train` — also install CPU torch for training (plain `uv sync` removes it); training/Kaggle recipe: `docs/training.md`
 - `uv run python -m signlnk_ml.training.train --cache-dir <dir> --out-dir <dir> [--sample] [--epochs N]` — train the baseline and write the signer-independent report (`--sample` = local pipeline check)
 - `... train --set section.key=value` (repeatable) overrides a config value; `uv run python -m signlnk_ml.training.compare <run dirs>` tabulates runs ranked on val (sweep recipe: `docs/training.md`)
+- `uv run python -m signlnk_ml.training.analyze <run dirs> [--confusion out.csv]` — offline: top-1 per run, ensemble, random 20/50/100-sign subsets, from each run's saved `scores.npz`
 - `docker compose up` — Postgres (API service arrives in Phase 1)
 
 ## Gotchas
