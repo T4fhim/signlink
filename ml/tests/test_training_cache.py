@@ -2,13 +2,16 @@
 
 import numpy as np
 import pytest
+import yaml
 from signlnk_ml.data.geometry import group_slice, pose_position
 from signlnk_ml.data.kaggle_islr import LEGACY_OFFSETS, LEGACY_TOTAL, to_slk_v1
-from signlnk_ml.features.normalize import load_layout
+from signlnk_ml.features.normalize import REPO_ROOT, load_layout
 from signlnk_ml.training.cache import (
     cache_mismatches,
     cap_other,
+    label_rows,
     other_windows,
+    resolve_vocabulary,
     select_indices,
     sequence_to_window,
 )
@@ -75,13 +78,33 @@ def test_select_indices_is_a_sorted_deterministic_subset() -> None:
     assert a.tolist() != select_indices(100, 10, seed=5).tolist()
 
 
+DRAFT = REPO_ROOT / "ml" / "vocab" / "draft-meeting-wishlist.yaml"
+DRAFT_ARG = "vocabulary.file=ml/vocab/draft-meeting-wishlist.yaml"
+
+
 def test_cache_mismatches_reports_settings_the_cache_was_not_built_with() -> None:
     cfg = load_config(CONFIGS_DIR / "baseline.yaml")
-    meta = {"length": 64, "other_min_run": 8, "other_ratio": 2.0}
-    assert cache_mismatches(meta, cfg) == []
-    problems = cache_mismatches({**meta, "length": 32}, cfg)
+    meta = {"length": 64, "other_min_run": 8, "other_ratio": 2.0, "signs": ["a", "b"]}
+    assert cache_mismatches(meta, cfg, ["a", "b"]) == []
+    problems = cache_mismatches({**meta, "length": 32}, cfg, ["a", "b"])
     assert len(problems) == 1 and "length" in problems[0]
-    assert cache_mismatches({"length": 64}, cfg)  # an old cache without the settings is rebuilt
+    assert cache_mismatches({"length": 64}, cfg, ["a", "b"])  # an old cache is rebuilt
+    assert any("signs" in p for p in cache_mismatches(meta, cfg, ["a", "c"]))
+
+
+def test_resolve_vocabulary_is_all_signs_by_default_or_the_first_k_of_a_file() -> None:
+    draft = yaml.safe_load(DRAFT.read_text(encoding="utf-8"))["signs"]
+    sign_map = {sign: index for index, sign in enumerate(draft)}
+    base = CONFIGS_DIR / "baseline.yaml"
+    assert resolve_vocabulary(load_config(base), sign_map) == draft  # index order
+    five = load_config(base, [DRAFT_ARG, "vocabulary.size=5"])
+    assert resolve_vocabulary(five, sign_map) == draft[:5]
+    assert resolve_vocabulary(load_config(base, [DRAFT_ARG]), sign_map) == draft
+
+
+def test_label_rows_keeps_only_vocabulary_signs_and_relabels_them_from_zero() -> None:
+    rows = [{"sign": "b"}, {"sign": "z"}, {"sign": "a"}]
+    assert label_rows(rows, ["a", "b"]) == [({"sign": "b"}, 1), ({"sign": "a"}, 0)]
 
 
 def test_resample_length_must_be_positive() -> None:

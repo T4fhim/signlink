@@ -31,7 +31,13 @@ from signlnk_ml.data.splits import SPLIT_NAMES, load_assignment
 from signlnk_ml.features.normalize import REPO_ROOT, load_layout
 from signlnk_ml.training.analyze import save_scores
 from signlnk_ml.training.augment import Augmenter
-from signlnk_ml.training.cache import build_split_cache, cache_mismatches, load_split, read_rows
+from signlnk_ml.training.cache import (
+    build_split_cache,
+    cache_mismatches,
+    load_split,
+    read_rows,
+    resolve_vocabulary,
+)
 from signlnk_ml.training.config import (
     REGISTRY_PATH,
     TrainConfig,
@@ -101,9 +107,10 @@ def git_commit() -> str:
 
 def ensure_cache(cache_dir: Path, cfg: TrainConfig, root: Path, sample: bool, workers: int) -> None:
     if all((cache_dir / s / "meta.json").exists() for s in SPLIT_NAMES):
+        signs = resolve_vocabulary(cfg, load_sign_map(root))
         for split in SPLIT_NAMES:
             meta = json.loads((cache_dir / split / "meta.json").read_text(encoding="utf-8"))
-            if problems := cache_mismatches(meta, cfg):
+            if problems := cache_mismatches(meta, cfg, signs):
                 sys.exit(f"{cache_dir} was built with other window settings: {problems}")
         return
     assignment = load_assignment(REPO_ROOT / cfg.splits)
@@ -231,7 +238,7 @@ def main() -> None:  # noqa: PLR0915
     )
     train_eval = WindowSource(train_windows[subset], train_labels[subset], use_z, velocity=velocity)
     train_top1 = float((predict(model, train_eval).argmax(axis=1) == train_labels[subset]).mean())
-    names = {index: sign for sign, index in load_sign_map(root).items()}
+    names = dict(enumerate(splits["train"][3]["signs"]))
     names[other_index] = "<other>"
     config_name = (
         args.config.relative_to(REPO_ROOT) if args.config.is_relative_to(REPO_ROOT) else args.config

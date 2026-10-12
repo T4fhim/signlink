@@ -27,6 +27,14 @@ class WindowSettings:
 
 
 @dataclass(frozen=True)
+class VocabularySettings:
+    """Which signs to train on: all by default, or the first `size` signs of a vocabulary file."""
+
+    file: str | None = None
+    size: int | None = None
+
+
+@dataclass(frozen=True)
 class InputSettings:
     use_z: bool = False
     velocity: bool = False
@@ -58,6 +66,7 @@ class TrainConfig:
     pretrained: list[str]
     splits: str
     window: WindowSettings
+    vocabulary: VocabularySettings
     input: InputSettings
     model: ModelConfig
     augment: AugmentConfig
@@ -74,6 +83,7 @@ def _build(cls: type[T], raw: Mapping[str, Any], where: str) -> T:
 
 SECTIONS: dict[str, type[Any]] = {
     "window": WindowSettings,
+    "vocabulary": VocabularySettings,
     "input": InputSettings,
     "model": ModelConfig,
     "augment": AugmentConfig,

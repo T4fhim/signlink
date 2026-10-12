@@ -1,16 +1,21 @@
 """Offline analysis of saved scores: vocabulary subsets, ensembles, confusion matrix (step 4)."""
 
+import json
 from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
+from signlnk_ml.features.normalize import REPO_ROOT
 from signlnk_ml.training.analyze import (
     confusion_matrix,
     ensemble,
     load_scores,
+    load_vocabulary,
     random_subset_top1,
     save_scores,
     subset_top1,
+    vocabulary_report,
 )
 
 SCORES = np.array(
@@ -82,6 +87,58 @@ def test_random_subsets_only_use_classes_that_have_windows() -> None:
     assert 0.0 <= result["min"] <= result["max"] <= 1.0
     with pytest.raises(ValueError, match="size"):
         random_subset_top1(scores, labels, size=4, draws=5, seed=1)
+
+
+SIGN_MAP = {"hello": 0, "bye": 1, "yes": 2, "no": 3}
+
+
+def test_vocabulary_is_loaded_in_priority_order_and_checked_against_the_sign_map(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "vocab.yaml"
+    path.write_text('signs: ["no", hello, "yes"]\n', encoding="utf-8")
+    assert load_vocabulary(path, SIGN_MAP) == ["no", "hello", "yes"]
+    path.write_text("signs: [no, hello]\n", encoding="utf-8")  # unquoted no is False in YAML
+    with pytest.raises(ValueError, match="quote yes and no"):
+        load_vocabulary(path, SIGN_MAP)
+    path.write_text("signs: [hello, unknownsign]\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="unknownsign"):
+        load_vocabulary(path, SIGN_MAP)
+    path.write_text("signs: [hello, hello]\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate"):
+        load_vocabulary(path, SIGN_MAP)
+
+
+def test_vocabulary_report_scores_inside_the_vocabulary_and_names_the_confusions() -> None:
+    # classes: 0 hello, 1 bye, 2 yes, 3 no. Vocabulary = hello, bye, yes (class 3 removed).
+    scores = np.array(
+        [
+            [0.6, 0.3, 0.1, 0.0],  # hello -> hello
+            [0.6, 0.3, 0.1, 0.0],  # bye -> hello (wrong)
+            [0.1, 0.2, 0.3, 0.9],  # yes -> yes once 'no' is removed
+            [0.9, 0.0, 0.0, 0.1],  # label 3 is outside the vocabulary: ignored
+        ]
+    )
+    labels = np.array([0, 1, 2, 3])
+    result = vocabulary_report(scores, labels, ["hello", "bye", "yes"], SIGN_MAP)
+    assert result["n"] == 3 and result["top1"] == pytest.approx(2 / 3)
+    assert result["confusions"] == [{"true": "bye", "predicted": "hello", "count": 1}]
+    per_sign = {s["sign"]: s["top1"] for s in result["per_sign"]}
+    assert per_sign == {"hello": 1.0, "bye": 0.0, "yes": 1.0}
+
+
+DRAFT = REPO_ROOT / "ml" / "vocab" / "draft-meeting-wishlist.yaml"
+
+
+def test_draft_wishlist_has_sixty_unique_signs_and_keeps_the_word_no() -> None:
+    signs = yaml.safe_load(DRAFT.read_text(encoding="utf-8"))["signs"]
+    assert len(signs) == 60 and len(set(signs)) == 60
+    assert all(isinstance(s, str) for s in signs) and "no" in signs  # an unquoted no is False
+
+
+def test_draft_wishlist_signs_exist_in_the_kaggle_label_map(islr_root: Path) -> None:
+    sign_map = json.loads((islr_root / "sign_to_prediction_index_map.json").read_text("utf-8"))
+    assert len(load_vocabulary(DRAFT, sign_map)) == 60
 
 
 def test_confusion_matrix_counts_true_by_predicted() -> None:

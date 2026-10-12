@@ -97,6 +97,17 @@ def test_overrides_change_typed_values_without_touching_the_file() -> None:
     assert load_config(CONFIGS_DIR / "baseline.yaml").model.d_model == 128
 
 
+def test_vocabulary_defaults_to_all_signs_and_can_be_set_by_override() -> None:
+    cfg = load_config(CONFIGS_DIR / "baseline.yaml")
+    assert cfg.vocabulary.file is None and cfg.vocabulary.size is None
+    cfg = load_config(
+        CONFIGS_DIR / "baseline.yaml",
+        overrides=["vocabulary.file=ml/vocab/draft-meeting-wishlist.yaml", "vocabulary.size=20"],
+    )
+    assert cfg.vocabulary.file == "ml/vocab/draft-meeting-wishlist.yaml"
+    assert cfg.vocabulary.size == 20
+
+
 def test_an_override_with_an_unknown_key_or_bad_syntax_is_rejected() -> None:
     with pytest.raises(ValueError, match="epochz"):
         load_config(CONFIGS_DIR / "baseline.yaml", overrides=["train.epochz=3"])
