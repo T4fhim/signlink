@@ -98,6 +98,32 @@ or 100 signs is kept (mean, 10th percentile and best of 200 draws). The spread b
 real run-to-run noise. Subset scores are a proxy for a chosen vocabulary: the model was trained on all
 250 signs and a random subset is not the advisors' list.
 
+## Train on the draft vocabulary
+
+`vocabulary.file` and `vocabulary.size` train only on the first `size` signs of a vocabulary file
+(the cache, classes and report then contain just those signs plus "other"). The draft list is
+`ml/vocab/draft-meeting-wishlist.yaml`: **not approved by advisors**. Use a separate cache folder per
+size, because the cache guard refuses a cache built for other signs. These runs are small (the data is
+about `size/250` of the baseline's), so the epoch count below keeps the number of optimizer steps near
+4,000 (the baseline had about 7,800); whether that is a good choice is **[VERIFY]**, judge it on val.
+
+```
+%%bash
+cd /kaggle/working/signlnk
+D=/kaggle/input/competitions/asl-signs; R=/kaggle/working/runs
+for k in 20 30 40 60; do
+  for s in 1 2 3; do
+    PYTHONPATH=ml python -m signlnk_ml.training.train --data-dir $D --cache-dir /kaggle/working/cache-v$k \
+      --out-dir $R/v${k}_seed$s --set vocabulary.file=ml/vocab/draft-meeting-wishlist.yaml \
+      --set vocabulary.size=$k --set train.seed=$s --set train.epochs=$((4000 / k))
+  done
+done
+```
+
+Download each run's `scores.npz` and `report.md` as before (12 runs: `v20_seed1` ... `v60_seed3`).
+Offline, ensemble the three seeds of one size (`analyze <v20_seed1> <v20_seed2> <v20_seed3>`) and
+compare with the proxy in `docs/reports/phase1-step4-seeds.md`.
+
 ## What the report contains
 
 Top-1 and top-5 on the val and test participants, per-participant top-1 (lowest signer shown), top-1
