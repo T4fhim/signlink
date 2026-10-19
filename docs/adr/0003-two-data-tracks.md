@@ -32,8 +32,11 @@ Rules:
   `track:` line, and `guard-paths.mjs` guards writes to `lexicon/core/`. Added in Phase 1 step 3
   (2026-10-06): the dataset registry `ml/datasets.yaml`, and `check_config` in
   `ml/signlnk_ml/training/config.py` (a release config may use only release-track datasets and
-  pretrained sources; run by `train.py` and by `ml/tests/test_training_config.py` in CI). Not built
-  yet: the export refusal (PLAN §5.1), which arrives with the ONNX export (Phase 1 step 5).
+  pretrained sources; run by `train.py` and by `ml/tests/test_training_config.py` in CI). Added in
+  Phase 1 step 5 (2026-10-19): the export refusal (PLAN §5.1), `export_allowed` / `ExportRefused` in
+  `ml/signlnk_ml/export/onnx_export.py`, which reuses `check_config`, also requires `track: release`,
+  and refuses before writing anything (`ml/tests/test_onnx_export.py`). It trusts the track and
+  datasets recorded in the run's `report.json`.
 - Re-check the Kaggle ISLR Rules page before the first public release (carried `[VERIFY]`).
 
 ## Verification

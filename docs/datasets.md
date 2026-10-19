@@ -51,6 +51,24 @@ not checked.
 **[VERIFY]** an explicit licence for each `.task` file before Phase 1 step 7 (the PWA caches and serves
 them from our own origin). If none exists, download them at first run instead of redistributing.
 
+## ONNX Runtime Web (runtime component, `onnxruntime-web@1.30.0`)
+
+| Field | Value |
+|---|---|
+| Source | npm `onnxruntime-web` (https://github.com/Microsoft/onnxruntime) |
+| Licence as found | MIT (`package.json` and the dist banner "Copyright (c) Microsoft Corporation"), read 2026-10-19 by `license-auditor`. The npm package has no LICENSE or ThirdPartyNotices file |
+| Content | WebAssembly runtime (`ort-wasm-simd-threaded*.wasm`, 14 to 28 MB) to be served from our own origin (steps 6 and 7) |
+| Track | Release (runtime component) |
+
+**Obligation:** ship ONNX Runtime's MIT `LICENSE` and `ThirdPartyNotices.txt` with the wasm files. The
+Python wheel `onnxruntime==1.31.0` carries them; **[VERIFY]** they match the v1.30.0 WASM build.
+Python `onnxruntime` enables Microsoft telemetry by default on Windows (its `Privacy.md`), so the
+export package and CI set `ORT_DISABLE_TELEMETRY=1`; the WASM build has no telemetry (same file).
+
+A shipped model trained on Kaggle ISLR (release track) needs a model card with the attribution line
+above and a copy of the Rules text, and `model.json` should carry the attribution string (not built
+yet, Phase 1 step 7).
+
 ## Not yet downloaded
 
 Own Studio recordings (release track) have no data yet. Contributors consent under CC BY 4.0; a

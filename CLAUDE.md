@@ -73,6 +73,7 @@ blocks, reminds or routes you, follow its message; never work around it.
 - `uv run python -m signlnk_ml.training.train --cache-dir <dir> --out-dir <dir> [--sample] [--epochs N]` — train the baseline and write the signer-independent report (`--sample` = local pipeline check)
 - `... train --set section.key=value` (repeatable) overrides a config value; `uv run python -m signlnk_ml.training.compare <run dirs>` tabulates runs ranked on val (sweep recipe: `docs/training.md`)
 - `uv run python -m signlnk_ml.training.analyze <run dirs> [--confusion out.csv] [--vocab ml/vocab/<list>.yaml]` — offline: top-1 per run, ensemble, random 20/50/100-sign subsets and a vocabulary list's first-k scores, from each run's saved `scores.npz`; `train --set vocabulary.file=… --set vocabulary.size=N` trains on a sign subset
+- `uv sync --all-packages --extra train --extra export` — also install onnx tooling; `uv run python -m signlnk_ml.export.onnx_export --run-dir <run> --out-dir <dir>` exports a release-track run to ONNX with a parity check (refuses research data); `pnpm --filter @signlnk/recognizer check-model <dir>` checks it with onnxruntime-web; `uv run python -m signlnk_ml.export.golden_fixtures` regenerates the tiny ONNX test fixture
 - `docker compose up` — Postgres (API service arrives in Phase 1)
 
 ## Gotchas
