@@ -1,0 +1,77 @@
+# DRAFT meeting-vocabulary wishlist, NOT approved. PLAN §7 Phase 1 step 1 / gate G0:
+# fluent Deaf signers choose the final 20-50 signs and sign them off in docs/review/.
+#
+# Drafted 2026-10-12 from the 250 Kaggle ISLR labels only (the dataset is mostly children's
+# vocabulary, so meeting coverage is thin: no "help", "stop", "sorry", "meeting", "question").
+# The order is a priority ranking written BEFORE looking at any accuracy: earlier = more useful in a
+# meeting. `analyze --vocab` scores the first 20, 30, 40, 50 and 60 signs. Advisors may remove, add
+# or reorder; they may also drop pairs the model cannot separate.
+signs:
+  # greetings, answers, politeness
+  - hello
+  - bye
+  - "yes" # quoted: unquoted yes/no are booleans in YAML
+  - "no"
+  - please
+  - thankyou
+  # turn-taking and time
+  - wait
+  - finish
+  - now
+  - later
+  # basic questions and modals
+  - can
+  - will
+  - why
+  - who
+  - where
+  - think
+  - like
+  - look
+  - listen
+  - talk
+  # common verbs
+  - say
+  - see
+  - hear
+  - read
+  - make
+  - find
+  - give
+  - open
+  - close
+  - go
+  # state and quality
+  - stay
+  - quiet
+  - loud
+  - fast
+  - better
+  - bad
+  - happy
+  - sad
+  - fine
+  - sick
+  # quantity and sequence
+  - many
+  - all
+  - every
+  - another
+  - first
+  - before
+  - after
+  # time words and places
+  - tomorrow
+  - yesterday
+  - morning
+  - night
+  - time
+  - home
+  - store
+  # everyday and connectives
+  - water
+  - drink
+  - not
+  - if
+  - because
+  - haveto

@@ -30,6 +30,28 @@ def per_participant_top1(
     }
 
 
+def worst_classes(scores: Scores, labels: Labels, k: int, min_n: int = 1) -> list[dict[str, Any]]:
+    """The k classes with the lowest top-1 (ties by class), among those with >= min_n windows."""
+    hit = scores.argmax(axis=1) == labels
+    rows = [
+        {"class": int(c), "top1": float(hit[labels == c].mean()), "n": int((labels == c).sum())}
+        for c in sorted(set(labels.tolist()))
+        if (labels == c).sum() >= min_n
+    ]
+    return sorted(rows, key=lambda r: (r["top1"], r["class"]))[:k]
+
+
+def top_confusions(scores: Scores, labels: Labels, k: int) -> list[dict[str, int]]:
+    """The k most frequent wrong (true, predicted) pairs, most frequent first."""
+    predicted = scores.argmax(axis=1)
+    wrong = labels != predicted
+    counts: dict[tuple[int, int], int] = {}
+    for true, pred in zip(labels[wrong].tolist(), predicted[wrong].tolist(), strict=True):
+        counts[(true, pred)] = counts.get((true, pred), 0) + 1
+    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:k]
+    return [{"true": t, "predicted": p, "count": n} for (t, p), n in ranked]
+
+
 def report(
     scores: Scores,
     labels: Labels,
@@ -47,6 +69,8 @@ def report(
         "n_other": 0,
         "false_activation_rate": None,
         "top1_signs_only": None,
+        "worst_classes": worst_classes(scores, labels, k=10),
+        "top_confusions": top_confusions(scores, labels, k=10),
     }
     if other_index is not None:
         predicted = scores.argmax(axis=1)

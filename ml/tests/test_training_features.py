@@ -4,7 +4,12 @@ import numpy as np
 import pytest
 from signlnk_ml.data.geometry import group_slice
 from signlnk_ml.features.normalize import load_layout
-from signlnk_ml.training.features import hands_absent_runs, make_input, resample_nearest
+from signlnk_ml.training.features import (
+    hands_absent_runs,
+    input_dim,
+    make_input,
+    resample_nearest,
+)
 
 LAYOUT = load_layout()
 N = LAYOUT.n_landmarks
@@ -69,6 +74,31 @@ def test_make_input_has_no_nan_and_a_mask_per_landmark() -> None:
     assert mask[2, 10] == 0 and mask[2, 11] == 1
     assert (mask[:, group_slice(LAYOUT, "face_lips")] == 0).all()
     assert (x[2, 30:33] == 0).all()  # a missing landmark's coordinates are zero
+
+
+def test_velocity_adds_frame_differences_where_both_frames_are_present() -> None:
+    window = sequence(4, [True] * 4)
+    window[2, 5] = np.nan  # landmark 5 missing in frame 2
+    x = make_input(window, use_z=False, velocity=True)
+    assert x.shape == (4, input_dim(N, use_z=False, velocity=True))
+    velocity = x[:, N * 3 :].reshape(4, N, 2)
+    assert np.allclose(velocity[0], 0)  # no previous frame
+    assert np.allclose(velocity[1, 0], window[1, 0, :2] - window[0, 0, :2])
+    assert np.allclose(velocity[2, 5], 0) and np.allclose(velocity[3, 5], 0)  # gap on either side
+    assert not np.isnan(x).any()
+
+
+def test_input_dim_matches_make_input_for_every_option() -> None:
+    window = sequence(3, [True] * 3)
+    for use_z in (False, True):
+        for velocity in (False, True):
+            x = make_input(window, use_z=use_z, velocity=velocity)
+            assert x.shape[1] == input_dim(N, use_z=use_z, velocity=velocity)
+
+
+def test_velocity_is_off_by_default() -> None:
+    window = sequence(3, [True] * 3)
+    assert make_input(window, use_z=False).shape[1] == N * 3
 
 
 def test_make_input_without_z_drops_the_depth_channel() -> None:

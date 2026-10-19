@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
@@ -28,6 +28,7 @@ from signlnk_ml.data.kaggle_islr import load_sign_map, read_sequence, to_slk_v1
 from signlnk_ml.data.splits import SPLIT_NAMES, load_assignment
 from signlnk_ml.features.normalize import REPO_ROOT, load_layout, normalize
 from signlnk_ml.schemas_generated.landmark_layout_v1 import LandmarkLayoutV1
+from signlnk_ml.training.analyze import load_vocabulary
 from signlnk_ml.training.config import TrainConfig, load_config
 from signlnk_ml.training.features import hands_absent_runs, resample_nearest
 
@@ -57,6 +58,38 @@ def cap_other(available: int, n_sign_windows: int, n_sign_classes: int, ratio: f
     return min(available, round(ratio * n_sign_windows / n_sign_classes))
 
 
+def resolve_vocabulary(cfg: TrainConfig, sign_map: Mapping[str, int]) -> list[str]:
+    """The signs to train on, in class order: every sign (index order), or the first `size`
+    signs of the vocabulary file."""
+    if cfg.vocabulary.file is None:
+        return sorted(sign_map, key=lambda sign: sign_map[sign])
+    signs = load_vocabulary(REPO_ROOT / cfg.vocabulary.file, sign_map)
+    return signs[: cfg.vocabulary.size] if cfg.vocabulary.size else signs
+
+
+def label_rows(
+    rows: Iterable[dict[str, str]], signs: Sequence[str]
+) -> list[tuple[dict[str, str], int]]:
+    """Rows whose sign is in the vocabulary, with their class index (position in `signs`)."""
+    index = {sign: i for i, sign in enumerate(signs)}
+    return [(row, index[row["sign"]]) for row in rows if row["sign"] in index]
+
+
+def cache_mismatches(meta: Mapping[str, Any], cfg: TrainConfig, signs: Sequence[str]) -> list[str]:
+    """Settings a cached split was not built with (an old cache must be rebuilt)."""
+    wanted: dict[str, Any] = {
+        "length": cfg.window.length,
+        "other_min_run": cfg.window.other_min_run,
+        "other_ratio": cfg.window.other_ratio,
+        "signs": list(signs),
+    }
+    return [
+        f"cache has {key}={meta.get(key)} but the config wants {value}"
+        for key, value in wanted.items()
+        if meta.get(key) != value
+    ]
+
+
 def select_indices(n: int, k: int, seed: int) -> npt.NDArray[np.intp]:
     """A sorted, seeded random subset of range(n) of size min(k, n)."""
     if k >= n:
@@ -84,9 +117,11 @@ def build_split_cache(  # noqa: PLR0913, PLR0917
     workers: int = 4,
 ) -> dict[str, Any]:
     layout = load_layout()
-    sign_map = load_sign_map(root)
-    other_index = len(sign_map)
-    n, n_signs = len(rows), len(sign_map)
+    signs = resolve_vocabulary(cfg, load_sign_map(root))
+    labeled = label_rows(rows, signs)
+    rows = [row for row, _ in labeled]
+    other_index = len(signs)
+    n, n_signs = len(rows), len(signs)
     cap = cap_other(n, n, n_signs, cfg.window.other_ratio)  # upper bound: one candidate per row
     out_dir.mkdir(parents=True, exist_ok=True)
     windows = np.lib.format.open_memmap(
@@ -100,9 +135,9 @@ def build_split_cache(  # noqa: PLR0913, PLR0917
     candidates: list[tuple[Array, str]] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
         results = pool.map(lambda r: _process(root, r, layout, cfg), rows)
-        for i, (row, (window, others)) in enumerate(zip(rows, results, strict=True)):
+        for i, ((row, label), (window, others)) in enumerate(zip(labeled, results, strict=True)):
             windows[i] = window.astype(np.float16)
-            labels[i], participants[i] = sign_map[row["sign"]], row["participant_id"]
+            labels[i], participants[i] = label, row["participant_id"]
             candidates.extend((other, row["participant_id"]) for other in others)
     wanted = cap_other(len(candidates), n, n_signs, cfg.window.other_ratio)
     keep = select_indices(len(candidates), wanted, seed=cfg.train.seed)
@@ -119,6 +154,9 @@ def build_split_cache(  # noqa: PLR0913, PLR0917
         "n_signs": n,
         "n_other": len(keep),
         "length": cfg.window.length,
+        "other_min_run": cfg.window.other_min_run,
+        "other_ratio": cfg.window.other_ratio,
+        "signs": signs,
         "n_classes": n_signs + 1,
         "other_index": other_index,
     }

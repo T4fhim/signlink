@@ -7,7 +7,7 @@ Keep this file lean: it is imported into every Claude Code session through CLAUD
 Current state and decisions go here; history goes in the changelog.
 
 ## Current phase
-**Phase 1 — Isolated signs + Studio v1, step 3 done, PR #10 open** (branch `feat/phase1-baseline`). Step 2 (splits) merged, PR #9. Step 3 report from the full Kaggle run (`docs/reports/phase1-baseline-kaggle.md`, commit `6876f76`): test top-1 0.469 / top-5 0.673, val top-1 0.607 / top-5 0.828 over 250 signs, far below the ≥85% target of step 4. Phase 0 closed 2026-10-06 with one caveat: landmark fps with a hand in view is 24.4–26.8, carried to Phase 1 step 6. Next: step 4 (iterate toward ≥85%); advisor outreach (step 1) still open.
+**Phase 1 — Isolated signs + Studio v1, step 4 in progress: first Kaggle sweep done, no variant beats the baseline** (branch `feat/phase1-iterate`; `docs/reports/phase1-step4-sweep.md`: six one-change runs all at val top-1 0.605–0.612, test 0.461–0.480, train top-1 0.85–0.99, so the model overfits its 15 training signers; test signer 29302 stays at 0.25–0.27 in every run; the ≥85% needs the chosen vocabulary, i.e. G0). Three seeds (`docs/reports/phase1-step4-seeds.md`): seed noise ~0.3 pt val / 1.4 pt test; a 3-model ensemble gets val 0.639 / test 0.499; test signer 29302 alone drags test (0.608 without it). Proxy on a **draft, not advisor-approved** 20-sign meeting list (`ml/vocab/draft-meeting-wishlist.yaml`): val 0.873 / test 0.772. Training only on the list (12 runs, `docs/reports/phase1-step4-vocabulary.md`) was 2–4 points worse than restricting the 250-sign model (20 signs: val 0.839 / test 0.758 vs 0.873 / 0.772), so the plan is: train on all signs, mask to the vocabulary at inference. Step 4 stays open: 85% not met on the test signers (signer 29302), vocabulary not chosen (G0). Steps 2 and 3 merged (PR #9, #10). Step 3 report from the full Kaggle run (`docs/reports/phase1-baseline-kaggle.md`, commit `6876f76`): test top-1 0.469 / top-5 0.673, val top-1 0.607 / top-5 0.828 over 250 signs, far below the ≥85% target of step 4. Phase 0 closed 2026-10-06 with one caveat: landmark fps with a hand in view is 24.4–26.8, carried to Phase 1 step 6. Next: step 5 (ONNX export of the 251-class model; run `/step 1.5`); advisor outreach (step 1) still open and blocks closing step 4.
 
 | Phase 0 step | Status |
 |---|---|
@@ -112,9 +112,11 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 - 2026-10-06 — ADR-0001 (landmarks not pixels), ADR-0002 (gloss layer), ADR-0003 (two data tracks) written and accepted
 - 2026-10-06 — Phase 0 closed with a caveat: the ≥25 fps target is not shown with a hand in view (24.4–26.8 fps, Chrome 154); carried to Phase 1 step 6 (re-measure whole-run mean, with inference running)
 
+- 2026-10-19 — Proposed (no ADR yet): train the recognizer on all 250 signs and restrict to the chosen vocabulary by masking at inference; list-only training was 2–4 points worse in every size tested (12 Kaggle runs)
+
 ## Open questions / risks
 - `reference_aspect=0.78` calibrated on one webcam; one fresh clip from a second camera passes parity (2026-10-06). More cameras still welcome, not blocking
-- ADR-0003's CI `track:` check is not built yet (`ml/configs/` is empty); do it with the first training config (Phase 1 step 3)
+- ADR-0003: the config track check exists (`check_config`, run by `train.py` and CI); the export refusal (PLAN §5.1) is not built yet, it arrives with the ONNX export (Phase 1 step 5)
 - Holistic↔Tasks face-index identity `[VERIFY]` (ADR-0004); hand side now follows the pose wrist (ADR-0008)
 - Landmark fps with a hand in view is 24.4–26.8; Phase 1 step 6 must show ≥25 fps with inference running
 - Hand z span looks ~2× smaller in browser clips (0.035–0.062) than Kaggle (median 0.102) `[VERIFY]` on real signing; start with hand x/y or a z ablation

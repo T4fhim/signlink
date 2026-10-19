@@ -71,6 +71,8 @@ blocks, reminds or routes you, follow its message; never work around it.
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.splits --check` — assert zero signer overlap between train/val/test (committed split: `ml/splits/kaggle-islr-v1.json`; `--write` only for a new split version)
 - `uv sync --all-packages --extra train` — also install CPU torch for training (plain `uv sync` removes it); training/Kaggle recipe: `docs/training.md`
 - `uv run python -m signlnk_ml.training.train --cache-dir <dir> --out-dir <dir> [--sample] [--epochs N]` — train the baseline and write the signer-independent report (`--sample` = local pipeline check)
+- `... train --set section.key=value` (repeatable) overrides a config value; `uv run python -m signlnk_ml.training.compare <run dirs>` tabulates runs ranked on val (sweep recipe: `docs/training.md`)
+- `uv run python -m signlnk_ml.training.analyze <run dirs> [--confusion out.csv] [--vocab ml/vocab/<list>.yaml]` — offline: top-1 per run, ensemble, random 20/50/100-sign subsets and a vocabulary list's first-k scores, from each run's saved `scores.npz`; `train --set vocabulary.file=… --set vocabulary.size=N` trains on a sign subset
 - `docker compose up` — Postgres (API service arrives in Phase 1)
 
 ## Gotchas

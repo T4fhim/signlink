@@ -43,6 +43,87 @@ PYTHONPATH=ml python -m signlnk_ml.training.train --config ml/configs/baseline.y
 
 Colab works the same way with the competition data downloaded through the Kaggle CLI.
 
+## Step 4 sweep: one change at a time
+
+`--set section.key=value` overrides any config value without a new file (repeatable; values are YAML).
+The cache is reused between runs as long as the `window` settings do not change. One Kaggle cell
+(`%%bash` must be its first line, and the `cd` makes `PYTHONPATH=ml` resolve; adjust it to where you cloned):
+
+```
+%%bash
+cd /kaggle/working/signlnk
+D=/kaggle/input/competitions/asl-signs; C=/kaggle/working/cache; R=/kaggle/working/runs
+run() { name=$1; shift; PYTHONPATH=ml python -m signlnk_ml.training.train --data-dir $D --cache-dir $C --out-dir $R/$name "$@"; }
+run baseline
+run velocity --set input.velocity=true
+run z        --set input.use_z=true
+run big      --set model.d_model=256 --set model.n_layers=4
+run dropout  --set model.dropout=0.3
+run augment  --set augment.rotate_degrees=25 --set "augment.scale_range=[0.8,1.25]" --set augment.drop_probability=0.2
+PYTHONPATH=ml python -m signlnk_ml.training.compare $R/*
+```
+
+Each run takes about as long as the baseline run did (epoch time is **[VERIFY]**, not in the logs), so
+check that budget before starting all six. `compare` ranks on **val** top-1 and shows test only for
+reference: a configuration chosen by its test score turns the test signers into a second validation
+set. Combine the changes that helped on val into one final run, then read its test score once.
+Every report now has the train top-1 (no augmentation) too: a low train top-1 means the model does
+not fit (more capacity, longer training); a high train top-1 with a low val top-1 means it does not
+transfer to new signers (more augmentation, regularisation, better features).
+
+## Seeds, ensemble and vocabulary-subset analysis
+
+Every run now also saves `scores.npz` (val and test softmax scores, about 7 MB each). That lets the
+laptop answer three questions without another Kaggle run. Three runs of the same config with different
+seeds (one Kaggle cell, same shape as the sweep above):
+
+```
+%%bash
+cd /kaggle/working/signlnk
+D=/kaggle/input/competitions/asl-signs; C=/kaggle/working/cache; R=/kaggle/working/runs
+run() { name=$1; shift; PYTHONPATH=ml python -m signlnk_ml.training.train --data-dir $D --cache-dir $C --out-dir $R/$name "$@"; }
+run seed1 --set train.seed=1
+run seed2 --set train.seed=2
+run seed3 --set train.seed=3
+```
+
+Download each run's `scores.npz` (and `report.md`) into one folder per run, then on the laptop:
+
+```
+uv run python -m signlnk_ml.training.analyze <dir>\seed1 <dir>\seed2 <dir>\seed3 --confusion test_confusion.csv
+```
+
+It prints top-1 per run and for the averaged **ensemble**, and top-1 when only a random subset of 20, 50
+or 100 signs is kept (mean, 10th percentile and best of 200 draws). The spread between seeds is the
+real run-to-run noise. Subset scores are a proxy for a chosen vocabulary: the model was trained on all
+250 signs and a random subset is not the advisors' list.
+
+## Train on the draft vocabulary
+
+`vocabulary.file` and `vocabulary.size` train only on the first `size` signs of a vocabulary file
+(the cache, classes and report then contain just those signs plus "other"). The draft list is
+`ml/vocab/draft-meeting-wishlist.yaml`: **not approved by advisors**. Use a separate cache folder per
+size, because the cache guard refuses a cache built for other signs. These runs are small (the data is
+about `size/250` of the baseline's), so the epoch count below keeps the number of optimizer steps near
+4,000 (the baseline had about 7,800); whether that is a good choice is **[VERIFY]**, judge it on val.
+
+```
+%%bash
+cd /kaggle/working/signlnk
+D=/kaggle/input/competitions/asl-signs; R=/kaggle/working/runs
+for k in 20 30 40 60; do
+  for s in 1 2 3; do
+    PYTHONPATH=ml python -m signlnk_ml.training.train --data-dir $D --cache-dir /kaggle/working/cache-v$k \
+      --out-dir $R/v${k}_seed$s --set vocabulary.file=ml/vocab/draft-meeting-wishlist.yaml \
+      --set vocabulary.size=$k --set train.seed=$s --set train.epochs=$((4000 / k))
+  done
+done
+```
+
+Download each run's `scores.npz` and `report.md` as before (12 runs: `v20_seed1` ... `v60_seed3`).
+Offline, ensemble the three seeds of one size (`analyze <v20_seed1> <v20_seed2> <v20_seed3>`) and
+compare with the proxy in `docs/reports/phase1-step4-seeds.md`.
+
 ## What the report contains
 
 Top-1 and top-5 on the val and test participants, per-participant top-1 (lowest signer shown), top-1
@@ -55,4 +136,8 @@ The test participants are scored once, after training, and never used to choose 
   negatives later.
 - Mirroring drops the face (no verified left/right face pairing); hands and pose are swapped properly.
 - Inputs are x, y only (`input.use_z: false`) until the browser/Kaggle hand z difference is settled.
-- Vocabulary is all 250 Kaggle signs; the advisors' list (G0) narrows it later.
+- Vocabulary is all 250 Kaggle signs; the advisors' list (G0) narrows it later. Nothing yet restricts
+  training or evaluation to a subset of signs: build that once the list exists.
+- If `input.velocity` is kept, the serving side (ONNX export, live decoder) must compute the same frame
+  differences, or they must go inside the exported graph.
+- Val and test have 3 signers each: treat val differences of about 1 point between runs as ties.
