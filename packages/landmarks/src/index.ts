@@ -10,6 +10,8 @@ export {
   normalizeSequence,
   shoulderIndices,
 } from "./normalize.ts";
+export { inputDim, makeInput, resampleNearest } from "./modelInput.ts";
+export type { ModelInputOptions } from "./modelInput.ts";
 export { decodeNpy, encodeNpy } from "./npy.ts";
 export { Recorder } from "./recorder.ts";
 export type { RecordingSummary } from "./recorder.ts";

@@ -64,6 +64,7 @@ blocks, reminds or routes you, follow its message; never work around it.
 - `pnpm --filter @signlnk/landmarks write-layout` — regenerate `slk-landmarks-v1` from MediaPipe
 - `uv run python -m signlnk_ml.features.golden_fixtures` — regenerate normalization golden fixtures
 - `pnpm --filter @signlnk/landmarks write-npy-fixture` — regenerate the golden `.npy` shared by the TS writer and the Python loader
+- `uv run python -m signlnk_ml.training.golden_fixtures` — regenerate the model-input fixture (`make_input` + `resample_nearest`) that `packages/landmarks/src/modelInput.ts` is tested against
 - `/dev/record` (after `pnpm dev`) — record 3 s of landmarks and download an `.npy`; save it in `$SIGNLNK_DATA_DIR/serve-recordings/`
 - `/dev/landmarks` — fps benchmark page
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.fetch_islr` — fetch the Kaggle ISLR sample (needs `uv tool install kaggle`, a token in `~/.kaggle/access_token`, rules accepted)
