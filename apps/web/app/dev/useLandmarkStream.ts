@@ -28,6 +28,7 @@ export function useLandmarkStream(onFrame: (result: FrameResult) => void) {
   const pipelineRef = useRef<LandmarkPipeline | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const runningRef = useRef(false);
+  const attemptRef = useRef(0);
   const onFrameRef = useRef(onFrame);
   const doneTimes = useRef<number[]>([]);
   const lastPresent = useRef<Presence | null>(null);
@@ -42,14 +43,20 @@ export function useLandmarkStream(onFrame: (result: FrameResult) => void) {
     onFrameRef.current = onFrame;
   });
 
-  const stop = useCallback(() => {
+  /** Stops the loop, the landmark worker and every camera track. */
+  const release = useCallback(() => {
     runningRef.current = false;
     pipelineRef.current?.dispose();
     pipelineRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
-    setStatus("idle");
   }, []);
+
+  const stop = useCallback(() => {
+    attemptRef.current += 1; // whatever start() is still doing is no longer wanted
+    release();
+    setStatus("idle");
+  }, [release]);
 
   useEffect(() => stop, [stop]);
 
@@ -62,52 +69,62 @@ export function useLandmarkStream(onFrame: (result: FrameResult) => void) {
     return () => clearInterval(timer);
   }, [status]);
 
-  const start = useCallback(async (settings: StreamSettings) => {
-    doneTimes.current = [];
-    lastPresent.current = null;
-    setStatus("loading");
-    setMessage("Loading models and camera…");
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, frameRate: 30 },
-        audio: false,
-      });
-      streamRef.current = stream;
-      const video = videoRef.current;
-      if (!video) throw new Error("video element missing");
-      video.srcObject = stream;
-      await video.play();
+  const start = useCallback(
+    async (settings: StreamSettings) => {
+      release(); // a second Start must not orphan a running camera
+      const attempt = ++attemptRef.current;
+      doneTimes.current = [];
+      lastPresent.current = null;
+      setStatus("loading");
+      setMessage("Loading models and camera…");
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, frameRate: 30 },
+          audio: false,
+        });
+        if (attempt !== attemptRef.current) {
+          stream.getTracks().forEach((track) => track.stop()); // stopped while waiting for the camera
+          return;
+        }
+        streamRef.current = stream;
+        const video = videoRef.current;
+        if (!video) throw new Error("video element missing");
+        video.srcObject = stream;
+        await video.play();
 
-      const pipeline = new LandmarkPipeline();
-      pipelineRef.current = pipeline;
-      setUsedDelegate(
-        await pipeline.init({
-          wasmBase: "/mediapipe/wasm",
-          modelBase: "/mediapipe/models",
-          ...settings,
-        }),
-      );
-      runningRef.current = true;
-      setStatus("running");
-      setMessage("");
+        const pipeline = new LandmarkPipeline();
+        pipelineRef.current = pipeline;
+        setUsedDelegate(
+          await pipeline.init({
+            wasmBase: "/mediapipe/wasm",
+            modelBase: "/mediapipe/models",
+            ...settings,
+          }),
+        );
+        runningRef.current = true;
+        setStatus("running");
+        setMessage("");
 
-      while (runningRef.current) {
-        const started = performance.now();
-        const result = await pipeline.process(video, started);
-        doneTimes.current.push(performance.now());
-        if (doneTimes.current.length > FPS_WINDOW) doneTimes.current.shift();
-        lastPresent.current = result.present;
-        onFrameRef.current(result);
+        while (runningRef.current) {
+          const started = performance.now();
+          const result = await pipeline.process(video, started);
+          doneTimes.current.push(performance.now());
+          if (doneTimes.current.length > FPS_WINDOW) doneTimes.current.shift();
+          lastPresent.current = result.present;
+          onFrameRef.current(result);
+        }
+      } catch (error) {
+        // A failure after stop() (pipeline disposed mid-frame) is expected, not an error. Any other
+        // failure must also release the camera: the page only shows its indicator while running.
+        if (attempt === attemptRef.current) {
+          release();
+          setMessage(String(error));
+          setStatus("error");
+        }
       }
-    } catch (error) {
-      // A failure after stop() (pipeline disposed mid-frame) is expected, not an error.
-      if (runningRef.current || pipelineRef.current) {
-        setMessage(String(error));
-        setStatus("error");
-      }
-      runningRef.current = false;
-    }
-  }, []);
+    },
+    [release],
+  );
 
   return { videoRef, status, message, usedDelegate, fps, present, start, stop };
 }
