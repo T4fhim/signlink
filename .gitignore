@@ -38,6 +38,7 @@ recordings/
 .DS_Store
 Thumbs.db
 desktop.ini
+.stfolder/
 .vscode/*
 !.vscode/extensions.json
 .idea/
