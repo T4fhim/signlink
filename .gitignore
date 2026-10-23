@@ -53,5 +53,9 @@ next-env.d.ts
 # MediaPipe assets are fetched at dev time (pnpm assets)
 apps/web/public/mediapipe/
 
+# onnxruntime-web wasm (pnpm assets) and a staged trained model (scripts/stage-model.mjs)
+apps/web/public/ort/
+apps/web/public/model/
+
 # Playwright MCP scratch output
 .playwright-mcp/

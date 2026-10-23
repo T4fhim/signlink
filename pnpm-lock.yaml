@@ -142,6 +142,12 @@ importers:
       '@signlnk/landmarks':
         specifier: workspace:*
         version: link:../../packages/landmarks
+      '@signlnk/recognizer':
+        specifier: workspace:*
+        version: link:../../packages/recognizer
+      '@signlnk/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       next:
         specifier: 16.3.8
         version: 16.3.8(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
