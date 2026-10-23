@@ -29,6 +29,7 @@ const pending = (tStart = 1000, tEnd = 1800): PendingSign => ({
   tEnd,
   tDetected: tEnd + 220,
   frameCount: 30,
+  reason: "quiet",
 });
 const softmax = (values: number[]): number[] => {
   const top = Math.max(...values);
@@ -151,5 +152,24 @@ describe("Decoder.push", () => {
     const presence = sign.input.subarray(N * 2, N * 3);
     expect(presence[25]).toBe(1);
     expect(presence[5]).toBe(0);
+    expect(sign.reason).toBe("quiet");
+  });
+
+  it("marks a sign cut at maxSignMs while the hands still move", () => {
+    const decoder = new Decoder(
+      config({
+        endpointer: { smoothing: 1, startMs: 60, stopMs: 200, minSignMs: 200, maxSignMs: 600 },
+      }),
+    );
+    const dt = 1000 / 30;
+    const found: PendingSign[] = [];
+    let x = 0.4;
+    for (let t = 0; t < 1500; t += dt) {
+      x += (0.45 * dt) / 1000; // keeps moving the whole time
+      const got = decoder.push(t, raw(x));
+      if (got) found.push(got);
+    }
+    expect(found.length).toBeGreaterThanOrEqual(1);
+    expect(found[0]?.reason).toBe("max");
   });
 });

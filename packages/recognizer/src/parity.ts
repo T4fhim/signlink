@@ -21,16 +21,17 @@ interface EncodedTensor {
 }
 
 const decodeTensor = (entry: EncodedTensor): Tensor => {
-  const bytes = Buffer.from(entry.b64, "base64");
+  // atob exists in Node and in browsers, so the same decoder runs in the browser parity check.
+  const binary = atob(entry.b64);
   const count = entry.shape.reduce((a, b) => a * b, 1);
-  if (bytes.length !== count * 4) {
+  if (binary.length !== count * 4) {
     throw new Error(
-      `parity tensor data (${bytes.length} bytes) does not match shape [${entry.shape}]`,
+      `parity tensor data (${binary.length} bytes) does not match shape [${entry.shape}]`,
     );
   }
-  // Copy into an aligned buffer: Buffer slices from the pool are not 4-byte aligned.
-  const data = new Float32Array(count);
-  new Uint8Array(data.buffer).set(bytes);
+  const data = new Float32Array(count); // owns an aligned buffer
+  const bytes = new Uint8Array(data.buffer);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
   return { shape: entry.shape, data };
 };
 

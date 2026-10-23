@@ -10,7 +10,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./decoder": "./src/decoder/index.ts",
-    "./session": "./src/session.ts"
+    "./client": "./src/client.ts",
+    "./parity": "./src/parity.ts",
+    "./stats": "./src/stats.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

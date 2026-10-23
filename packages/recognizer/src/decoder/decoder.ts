@@ -29,6 +29,8 @@ export interface PendingSign {
   tEnd: number;
   tDetected: number;
   frameCount: number;
+  /** "max" = cut at maxSignMs while the hands still moved: not a measured sign end. */
+  reason: "quiet" | "max";
 }
 
 /**
@@ -73,6 +75,7 @@ export class Decoder {
       tEnd: segment.tEnd,
       tDetected: segment.tDetected,
       frameCount: segment.frameCount,
+      reason: segment.reason,
     };
   }
 
