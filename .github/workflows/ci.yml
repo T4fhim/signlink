@@ -26,12 +26,14 @@ jobs:
 
   python:
     runs-on: ubuntu-latest
+    env:
+      ORT_DISABLE_TELEMETRY: "1" # onnxruntime telemetry off (CLAUDE.md rule 2)
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-      - run: uv sync --locked --all-packages --extra train # CPU torch: model tests + mypy need it
+      - run: uv sync --locked --all-packages --extra train --extra export # torch + onnx: model, export tests, mypy
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy ml services

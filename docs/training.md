@@ -124,6 +124,61 @@ Download each run's `scores.npz` and `report.md` as before (12 runs: `v20_seed1`
 Offline, ensemble the three seeds of one size (`analyze <v20_seed1> <v20_seed2> <v20_seed3>`) and
 compare with the proxy in `docs/reports/phase1-step4-seeds.md`.
 
+## Export to ONNX (Phase 1 step 5)
+
+```
+uv sync --all-packages --extra train --extra export
+uv run python -m signlnk_ml.export.onnx_export --run-dir <training run> --out-dir <models>\baseline-seed1
+pnpm --filter @signlnk/recognizer check-model <models>\baseline-seed1
+```
+
+The first command writes `model.onnx` (one file, input `windows` [batch, 64, 438], outputs `logits` and
+`embedding`), `model.json` (classes, input spec, track, datasets, parity numbers) and `parity.json`
+(inputs and PyTorch's outputs). It refuses a research-track run, or a release run that used research
+data, before writing anything (ADR-0003). The second command loads the model with onnxruntime-web
+(WebAssembly, in Node) and prints the largest difference from PyTorch; the tolerance is 1e-4 on logits.
+
+- The trained model is **not committed** (4.5 MB, a release artifact): keep it under
+  `$SIGNLNK_DATA_DIR\models\`. The committed `tests/fixtures/onnx/tiny.onnx` is a small seeded model
+  both test suites check in CI; regenerate it only for an intended graph change with
+  `uv run python -m signlnk_ml.export.golden_fixtures`.
+- It exports the full 251-class model. The vocabulary is applied as a mask by the decoder (step 6), not
+  baked into the model (`docs/reports/phase1-step4-vocabulary.md`).
+- int8 quantization is **not done**: the plan only allows it if accuracy drops under 1 point, which
+  needs the full val/test windows (a Kaggle run), and the fp32 model's browser latency is not measured
+  yet (step 6). Revisit if step 6 needs it.
+
+### Using the model in the browser (steps 6 and 7)
+
+From the privacy review of `onnxruntime-web` 1.30.0 (no CDN fallback or telemetry found in its dist files;
+it fetches third-party files only if `wasmPaths` is pointed at a remote host). To keep rule 2:
+
+- **Input contract:** `windows` is `[batch, 64, 438]` float32: per frame the x, y of all 146 landmarks
+  (landmark-major, NaN replaced by 0), then 146 presence values (1 = detected, 0 = missing). A frame of
+  all zeros means no landmark. This mirrors `signlnk_ml.training.features.make_input`
+  (`use_z=false`, `velocity=false`) after the same normalization as training; the decoder must build it
+  identically. Training resamples each whole clip to 64 frames with nearest-frame resampling
+  (`features.resample_nearest`); a live sliding window over 64 raw frames is a different input
+  distribution (median Kaggle clip is 21 frames), so step 6 must resample its windows the same way
+  or measure the difference.
+- **What parity covers:** onnxruntime-web 1.30.0's WebAssembly backend in Node, which loads
+  `ort-wasm-simd-threaded.wasm`. A browser bundle of `import "onnxruntime-web"` resolves to a different
+  build (`ort.bundle.min.mjs`, which requests `ort-wasm-simd-threaded.jsep.wasm`, the WebGPU-capable
+  binary), so that binary has **not** been parity-tested. In the browser import
+  `onnxruntime-web/wasm` (it uses the same `ort-wasm-simd-threaded.wasm` as the tested Node entry;
+  it cannot run in Node) and add one browser parity run in step 6.
+- Copy `ort-wasm-simd-threaded.wasm` and `.mjs` from `node_modules/onnxruntime-web/dist/` into
+  `apps/web/public/ort/` with a script (like the MediaPipe assets), keep them out of git, and set
+  `ort.env.wasm.wasmPaths = "/ort/"` (same origin, never a host) before the first session. Keep
+  `executionProviders: ["wasm"]`; do not import the webgpu or "all" builds.
+- Threads need `SharedArrayBuffer`, so COOP `same-origin` + COEP `require-corp` on pages that run
+  inference; without them ORT drops to one thread. Measure p95 both ways, and check `/studio` and
+  `/dev` still work with those headers.
+- Load the model as bytes from the same origin and pass the bytes to `createRecognizer`. Strip
+  `source.command` (it can hold local paths) from `model.json` before it is shipped. Keep `track`,
+  `datasets` and the Kaggle attribution (CC BY 4.0) with the release bundle.
+- Add a Playwright check that every request during a recognition run goes to the same origin.
+
 ## What the report contains
 
 Top-1 and top-5 on the val and test participants, per-participant top-1 (lowest signer shown), top-1
