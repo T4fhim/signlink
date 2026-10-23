@@ -170,6 +170,12 @@ importers:
 
   packages/recognizer:
     dependencies:
+      '@signlnk/landmarks':
+        specifier: workspace:*
+        version: link:../landmarks
+      '@signlnk/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       onnxruntime-web:
         specifier: 1.30.0
         version: 1.30.0
