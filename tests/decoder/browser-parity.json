@@ -1,0 +1,50 @@
+{
+  "what": "Browser ONNX parity vs PyTorch and single-window latency, as returned by /dev/parity (data-testid=parity-result)",
+  "when": "2026-10-24",
+  "how": "node scripts/stage-model.mjs <run-dir>; pnpm dev (second run: SIGNLNK_ISOLATE=1 pnpm dev); open /dev/parity; Run parity check",
+  "model": "baseline-seed1: 251 classes, release track, Kaggle ISLR, ONNX opset 18",
+  "machine": "AMD Ryzen 7 7840H, 8 cores / 16 logical. NOT the i5-1135G7 benchmark laptop, so these do not count toward the step 6 Done-when",
+  "note": "The parity windows are the ones step 5 checked in Node, so the equal logits difference there and here (3.58e-6) is expected",
+  "runs": [
+    {
+      "label": "default headers, 1 thread",
+      "result": {
+        "batch": 8,
+        "maxAbsLogits": 0.0000035762786865234375,
+        "maxAbsEmbedding": 0.0000020265579223632812,
+        "tolerance": 0.0001,
+        "pass": true,
+        "inferMs": 138.60000000149012,
+        "singleWindowMs": {
+          "runs": 30,
+          "p50": 9.599999997764826,
+          "p95": 11.099999997764826
+        },
+        "ortThreads": 1,
+        "crossOriginIsolated": false,
+        "foreignRequests": [],
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "label": "SIGNLNK_ISOLATE=1 (COOP/COEP), 4 threads",
+      "result": {
+        "batch": 8,
+        "maxAbsLogits": 0.0000035762786865234375,
+        "maxAbsEmbedding": 0.0000020265579223632812,
+        "tolerance": 0.0001,
+        "pass": true,
+        "inferMs": 109.00499999895692,
+        "singleWindowMs": {
+          "runs": 30,
+          "p50": 4.75,
+          "p95": 6.964999999850988
+        },
+        "ortThreads": 4,
+        "crossOriginIsolated": true,
+        "foreignRequests": [],
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      }
+    }
+  ]
+}

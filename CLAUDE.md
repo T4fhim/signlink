@@ -67,6 +67,8 @@ blocks, reminds or routes you, follow its message; never work around it.
 - `uv run python -m signlnk_ml.training.golden_fixtures` — regenerate the model-input fixture (`make_input` + `resample_nearest`) that `packages/landmarks/src/modelInput.ts` is tested against
 - `/dev/record` (after `pnpm dev`) — record 3 s of landmarks and download an `.npy`; save it in `$SIGNLNK_DATA_DIR/serve-recordings/`
 - `/dev/landmarks` — fps benchmark page
+- `node scripts/stage-model.mjs <run-dir> [--vocab ml/vocab/<list>.yaml]` — stage a release-track ONNX model (+ vocabulary, parity file) into the gitignored `apps/web/public/model/`; `pnpm assets` also copies the onnxruntime-web wasm into `public/ort/`
+- `/dev/decode` (after staging + `pnpm dev`) — live decoder: captions, whole-run fps, sign-end → caption latency, JSON report download; `/dev/parity` — browser ONNX parity vs PyTorch and single-window latency; `SIGNLNK_ISOLATE=1 pnpm dev` serves `/dev` cross-origin isolated (ORT threads)
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.fetch_islr` — fetch the Kaggle ISLR sample (needs `uv tool install kaggle`, a token in `~/.kaggle/access_token`, rules accepted)
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run pytest` — also runs the real-data train/serve parity tests (they skip without data)
 - `SIGNLNK_DATA_DIR=D:\signlnk-data uv run python -m signlnk_ml.data.splits --check` — assert zero signer overlap between train/val/test (committed split: `ml/splits/kaggle-islr-v1.json`; `--write` only for a new split version)
