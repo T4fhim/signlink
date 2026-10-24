@@ -95,6 +95,28 @@ Consequences:
 
 Result and next steps: `docs/reports/phase1-youtube-probe.md`.
 
+## LearnSigns lessons on YouTube, CC BY (`youtube-cc-by-learnsigns`)
+
+| Field | Value |
+|---|---|
+| Source | https://www.youtube.com/watch?v=3hyOh9UD4jw ("LearnSigns.com Lesson 5: Family", uploaded 2012-08-11, 387 s) and https://www.youtube.com/watch?v=csqLvE2NeBU ("LearnSigns.com Lesson 30: Colors", uploaded 2013-04-04, 244 s); channel LearnSigns |
+| Content | Two ASL lessons, probably one signer **[VERIFY]**; English captions (manual for Family, automatic with word times for Colors); only extracted landmarks and caption text are kept alongside the videos |
+| Files used | `video.mp4`, caption `*.json3`, `video.info.json`, `full/{landmarks,present}.npy`, `full/meta.json` per video; `probe_stage1.json` |
+| Downloaded | 2026-10-24 with `yt-dlp` 2026.10.21 |
+| Location | `D:\signlnk-data\research-videos\3hyOh9UD4jw` and `...\csqLvE2NeBU`; never committed |
+| Track | **research** for now |
+
+**Licence as found:** `yt-dlp --print license` returned "Creative Commons Attribution license (reuse
+allowed)" for both (read 2026-10-24). This is the licence label the uploader set on YouTube; the
+licence version and the channel's rights over the footage were not checked **[VERIFY]**. The project owner approved adding both videos on 2026-10-25.
+
+Consequences:
+- CC BY allows commercial use with **attribution**: credit "LearnSigns (learnsigns.com), CC BY" in any
+  place that uses them. Release-track use needs, first, a confirmed licence (the YouTube page and the
+  uploader's own terms), and a fluent-signer check of the labels; until then they stay research track.
+- Landmarks (face points) are personal data and stay on this machine.
+- Result: `docs/reports/phase1-youtube-probe.md`, "Stage 1 result".
+
 ## Not yet downloaded
 
 Own Studio recordings (release track) have no data yet. Contributors consent under CC BY 4.0; a

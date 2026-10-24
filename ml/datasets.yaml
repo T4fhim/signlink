@@ -19,6 +19,9 @@ wlasl:
 how2sign:
   track: research
   licence: "Non-commercial"
+youtube-cc-by-learnsigns:
+  track: research
+  licence: "CC BY as labelled on YouTube (yt-dlp, read 2026-10-24); release use [VERIFY] licence version, rights and label check (docs/datasets.md)"
 youtube-tutorial-videos:
   track: research
   licence: "Standard YouTube licence (yt-dlp license=NA) unless a video is Creative Commons; local research use only, never redistributed (docs/datasets.md)"
