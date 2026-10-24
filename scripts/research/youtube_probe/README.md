@@ -27,5 +27,9 @@ Dev-time only: mediapipe 1.1.1 (Apache-2.0) stays in the separate venv and is no
 dependency. Its `NOTICE` says it sends usage metrics to Google (not images or video); run it with
 outbound network blocked until that is verified (report, "Licence and data handling").
 
+Stage 1 (label-free segmentation with the decoder's endpointer, several videos; edit `VIDEOS` for
+more): `SIGNLNK_DATA_DIR=... uv run --no-sync python scripts/research/youtube_probe/probe_stage1.py`.
+It expects each video's `full/` folder from step 2 and its caption file; writes `probe_stage1.json`.
+
 `probe_25.py` hard-codes this one video's caption times and the gloss-to-class mapping (`[VERIFY]`
 by a fluent signer). For another video, edit `SIGNS` and `END`.

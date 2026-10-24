@@ -44,15 +44,55 @@ thankyou 1/1, dog 10/1, cat 2/1, food 2/1, milk 1/1, go 9/1, potty 14/2, fine 1/
    20 to 50 sign list the product will use.
 5. Nothing here is a signer-independent held-out split; it is a domain-compatibility check only.
 
+## Stage 1 result (2026-10-25): label-free segmentation, 3 videos, 3 signers at most
+
+Machine: home PC (AMD Ryzen 7 7840H). Command:
+`SIGNLNK_DATA_DIR=D:\signlnk-data uv run --no-sync python scripts/research/youtube_probe/probe_stage1.py`
+at repo commit `61540f1` plus the uncommitted stage 1 script. Raw output:
+`$SIGNLNK_DATA_DIR/research-videos/probe_stage1.json`.
+
+Change from the first probe: segments come from hand motion alone (a port of the decoder's
+`DEFAULT_ENDPOINTER`, `packages/recognizer/src/decoder/endpointer.ts`), each segment is resampled to 64
+frames and scored once, as the live decoder would. Captions only say which segment is meant to be which
+sign (best overlap with [t - 1.0 s, t + 2.5 s]). Scores are per caption anchor (one anchor = one time a
+mapped sign is named), not per distinct sign. Two Creative Commons videos from LearnSigns were added;
+both are lessons from one channel, so probably one signer **[VERIFY]**.
+
+| Video | Events | Anchors matched | Top-1 (250) | Top-5 (250) | Top-1 (masked) | Masked chance |
+|---|---|---|---|---|---|---|
+| `0FcwzMq4iWg` Learn How to Sign (16 classes) | 185 | 35/35 | 12 (34%) | 19 (54%) | 20 (57%) | 6% |
+| `3hyOh9UD4jw` LearnSigns, Family (9 classes) | 126 | 31/31 | 5 (16%) | 8 (26%) | 9 (29%) | 11% |
+| `csqLvE2NeBU` LearnSigns, Colors (8 classes) | 85 | 32/33 | 4 (12%) | 8 (25%) | 12 (38%) | 12% |
+| All | 396 | 98/99 | 21 (21%) | 35 (36%) | 41 (42%) | n/a |
+
+Masked top-3 over all anchors: 61/98 (62%).
+
+What it shows:
+1. The first probe was optimistic. The same video drops from 14/16 masked top-1 to 20/35 (57%) once
+   segmentation does not use the label's time range. Denominators differ (signs vs anchors).
+2. On the two new videos the unmasked top-5 halves (26% and 25% vs 54%) and the masked top-1 is 29% and
+   38%, about 2.5 to 3 times chance. A clear domain gap, but not a collapse to chance (top-5 chance over
+   250 classes is 2%).
+3. It is uneven by sign. Perfect or near: cat 2/2, please 2/2, milk 2/2, orange 4/4, red 4/6 (masked
+   top-1). Zero: no, potty, brother (0/4), grandma (0/3), uncle (0/2), black (0/2), green and yellow (0/4 each);
+   `mom` is 2/3 in video 1 but 0/5 in the Family lesson. Blue and green are often read as `vacuum`.
+4. 396 events for 99 anchors: three of four segments are other gestures, explanations or repeats, so a
+   live decoder on this kind of video would also see many false activations.
+
+Caveats: anchors are noisy (a colour named in an explanation counts); the gloss-to-class mapping is mine
+**[VERIFY]**; some Kaggle sign variants may differ from the teachers' (for example brother, grandma);
+two of the three videos are probably one signer, so this is closer to 2 signers than 3.
+
 ## Verdict: how good an alternative is this?
 
 - **Replacement for fluent-signer data: no.** One video is one signer (Kaggle has 21; the baseline still
   overfits its 15 training signers, train 0.85 to 0.99 vs test 0.46 to 0.48). Labels from captions are
   unverified, tutorial signing is slow and exaggerated, and the signer's fluency is `[VERIFY]`.
-- **Compatible input domain: yes, with evidence.** A model trained only on Kaggle landmarks reads
-  landmarks from a different camera, resolution, extractor build and signer well enough to rank the true
-  sign first or second for 11 of 16 signs (all 250 classes). That removes the biggest unknown behind
-  "learn from videos".
+- **Input domain: usable, with a real gap.** A model trained only on Kaggle landmarks reads landmarks
+  from another camera, extractor build and signer well above chance (stage 1: 42% masked top-1 over 98
+  anchors vs 6 to 12% chance per video; 36% top-5 over 250 classes), but far below the 85% target, and worst
+  on new signers (29 to 38%). The pipeline works; accuracy on unseen signers is the problem, which is
+  exactly what more signer diversity should fix.
 - **Useful as a research-track supplement and a free test source: probably, unproven.** The value would
   come from many signers, not many clips of one.
 - **Cannot reach a release model** unless the videos are Creative Commons or the creator grants written
@@ -66,9 +106,10 @@ thankyou 1/1, dog 10/1, cat 2/1, food 2/1, milk 1/1, go 9/1, potty 14/2, fine 1/
 
 Each stage has a stop condition so it does not grow into a scraping project before G0.
 
-1. **Fix the evaluation (no training).** Segment by motion endpoints instead of label time ranges; report
-   unmasked and masked scores; add 2 to 3 more videos with different signers, preferring Creative Commons
-   (`yt-dlp --print license`). Stop if the unmasked top-5 collapses on new signers.
+1. **Fix the evaluation (no training). Done 2026-10-25** (see Stage 1 result): motion-endpoint segmentation,
+   masked and unmasked scores, 2 more Creative Commons videos. The stop condition (unmasked top-5
+   collapsing on new signers) was not met: it halved to 25 to 26%, well above 2% chance. Still open:
+   videos from clearly different signers (the two added are probably one).
 2. **Train with it (research track).** Add video-derived clips to the Kaggle training set; evaluate on the
    held-out Kaggle test signers and on your own recordings. Worth continuing only if the gain on signer
    29302 and on test top-1 exceeds seed noise (about 1.4 points on test, `phase1-step4-seeds.md`).
