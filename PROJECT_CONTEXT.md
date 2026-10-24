@@ -116,6 +116,8 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 
 - 2026-10-19 — Exported model is the full 251-class recognizer as one ONNX file (torch dynamo exporter, opset 18, dynamic batch); export refuses non-release runs (ADR-0003); parity file contract `slk-parity-v1`; no int8 until latency/accuracy evidence
 
+- 2026-10-24 — YouTube tutorial landmarks probe (research track only): input domain compatible (top-1 7/16, top-5 12/16 on one signer, optimistic, not an accuracy number); stages and stop conditions in `docs/reports/phase1-youtube-probe.md`
+
 - 2026-10-24 — The benchmark PC is chosen per day (home Ryzen 7 7840H or work PC), asked at the first task of each day; reports must name the machine
 
 ## Open questions / risks
