@@ -1,11 +1,44 @@
-# Phase 1 step 6: live decoder (code built, Done-when not yet measured)
+# Phase 1 step 6: live decoder (fps met on the home PC, latency sample too small, accuracy poor)
 
 Branch `feat/phase1-live-decoder`, 2026-10-24. PLAN §7 Phase 1 step 6 **Done when:** p95 sign-end →
 caption < 500 ms **and** ≥ 25 fps with inference running, on the benchmark laptop.
 
-**Status: the acceptance numbers do not exist yet.** Measuring them needs a person signing on camera
-on the benchmark laptop (i5-1135G7, per `PROJECT_CONTEXT.md`). Everything below was measured on a
-different machine without a camera and does **not** count toward the Done-when.
+**Benchmark PC.** It is chosen per day (CLAUDE.md step 0). For this run it was the **home PC, AMD
+Ryzen 7 7840H** (the run reports 16 logical cores). Results from another PC need their own run.
+
+**Status:** fps target met on this PC; the latency target is not yet shown (13 of the 20 samples it
+needs); live recognition on real signing was visibly inaccurate (see below). Numbers in the next
+section come from `D:\signlnk-data\serve-recordings\decode-benchmark.json` (not in the repo; the
+suggested home is `tests/decoder/decode-benchmark.json`).
+
+## Live run on the home PC (Ryzen 7 7840H, Chrome 155, 2026-10-23, camera, signing)
+
+Options: GPU delegate, `poseEvery` 2, `faceEvery` 2, `vocabulary` all (251 classes, no mask),
+`minConfidence` 0.5, `debounceMs` 600, endpointer defaults (`stopMs` 200), 1 ORT thread, not
+cross-origin isolated. Checked against the file: fps = (8,790 − 1) frames / 208.45 s = 42.16; counts
+reconcile (47 signs, 6 forced, 41 decoder waits, 13 painted at rest).
+
+| | Result | Target / note |
+|---|---|---|
+| Whole-run fps | **42.16** (208 s, 8,790 frames, longest gap 202 ms) | ≥ 25 over ≥ 60 s: **met** |
+| Hands in view | either 44.9%, right 44.8%, left 3.7%, both 3.5% | run was mostly not signing |
+| Landmark ms | p50 24.1, p95 39.6, max 5,931 | max is probably cold start `[VERIFY]` |
+| Model run | p50 5.5 ms, p95 6.3 | |
+| Sign end → caption | p50 256 ms, p95 319.5 (= max), n = 13 | < 500 ms, but needs n ≥ 20: **not met** |
+| Of which endpointer wait / pipeline | 212 / 23.7 ms p50 | wait ≈ `stopMs` 200 |
+| Signs | 47 segments, 15 captioned, 6 forced at `maxSignMs` | |
+
+Caveats on the fps: it is a whole-run mean with hands in view in under half the frames, pose and
+face only every second frame, and the GPU delegate; the rate during sustained two-hand signing is
+not separated out. Landmark p95 of 39.6 ms is about 25 fps for the slowest frames.
+
+**Accuracy observed by the signer (not measured, no per-sign log):** "see you later" yielded only
+"see"; pointing at self for "I" yielded "thirsty". Known reasons: the 251-class model has **no
+"I", "me" or "you" class** (it has "see", "later", "thirsty"), so those signs can only be wrong or
+`<other>`; the run used no vocabulary mask; a phrase signed without pauses may be one segment for
+the endpointer. Why "later" was lost (merged segment, confidence under 0.5, or debounce) cannot be
+told from the report. A per-sign log (segment length, top-3, confidence) would answer it; the
+signer has ideas for improving the learning, to follow.
 
 ## What was built
 
@@ -18,7 +51,7 @@ different machine without a camera and does **not** count toward the Done-when.
 | Pages | `/dev/decode` (camera, captions, report download), `/dev/parity` (browser parity) |
 | Assets | `scripts/fetch-ort-assets.mjs` (via `pnpm assets` / `predev`), `scripts/stage-model.mjs` |
 
-## Measured on this machine (not the benchmark laptop)
+## Parity, single-window latency and tests (same PC, no camera)
 
 Machine: AMD Ryzen 7 7840H, 8 cores / 16 logical (`Get-CimInstance Win32_Processor`), Chrome 155,
 model `baseline-seed1` (251 classes, release track, Kaggle ISLR), served by `pnpm dev`.
@@ -37,16 +70,18 @@ model `baseline-seed1` (251 classes, release track, Kaggle ISLR), served by `pnp
 
   Both are far inside the budget, so threads are not needed; isolation stays an opt-in flag.
 - `/dev/decode` loads the model, worker and wasm, then waits at the camera permission (this
-  automated browser has no camera). Decoding on real signing is untested.
+  automated browser has no camera). The live run with a camera is in the section above.
 - Node: `pnpm test` landmarks 84, recognizer 66, schemas 17 passed; `uv run pytest` 203 passed;
   mypy, ruff, typecheck clean. The host test feeds a synthetic sign through `InferenceHost` with
   `tiny.onnx` and checks the caption equals an independent `Decoder` + runtime on the same frames.
 
 ## Not measured, and what blocks it
 
-1. **fps with inference running** (whole-run mean ≥ 60 s, both hands signing): needs the benchmark
-   laptop and a camera.
-2. **p95 sign-end → caption** (`signEndToCaptionMs` in the report): same.
+1. **fps while signing with both hands**: the home-PC run met 25 fps as a whole-run mean, but hands
+   were in view in 45% of frames and both in 3.5%. Repeat with sustained two-hand signing, and on
+   the other PC on a day it is the benchmark.
+2. **p95 sign-end → caption** (`signEndToCaptionMs`): 319.5 ms from 13 samples, below the 20 the
+   report needs to call it met. Needs a longer run with at least 20 captioned signs that end at rest.
 3. Endpointer thresholds (`startSpeed` 0.6, `stopSpeed` 0.3 shoulder widths/s, `stopMs` 200,
    preroll 150, tail 100) are untuned starting values `[VERIFY]`.
 4. Whether real signing, segmented by the endpointer, scores near the training-clip accuracy: the
@@ -64,7 +99,7 @@ How the report counts latency: a sign cut at `maxSignMs` while the hands still m
 of `signEndToCaptionMs` and `decoderWaitMs`. The latency target counts as met only with at least 20
 captioned signs, because below that a nearest-rank p95 is just the maximum.
 
-How to measure on the benchmark laptop: `pnpm install`, `pnpm assets`,
+How to measure on the day's benchmark PC: `pnpm install`, `pnpm assets`,
 `node scripts/stage-model.mjs <run-dir> --vocab ml/vocab/draft-meeting-wishlist.yaml --size 20`
 (`--size` keeps the first N signs, so runs match the 20-sign proxy), `pnpm dev`, open `/dev/decode`, start, sign for ≥ 60 s with both hands, download the report (suggested home:
 `tests/decoder/decode-benchmark.json`, like `tests/landmarks/`).
@@ -75,8 +110,9 @@ How to measure on the benchmark laptop: `pnpm install`, `pnpm assets`,
   thread workers in `/ort`. The isolation rule therefore covers `/dev`, `/_next` and `/ort`.
 - A blocked worker script fires `error` with an empty message; the first version showed nothing.
   `client.ts` now reports "the inference worker failed to start".
-- `PROJECT_CONTEXT.md` names the i5-1135G7 as "this machine"; this machine is a Ryzen 7 7840H.
-  Update the file once it is clear which machine is the benchmark laptop.
+- `PROJECT_CONTEXT.md` named the i5-1135G7 as "this machine"; the runs above are on a Ryzen 7 7840H.
+  Resolved 2026-10-24: the benchmark PC is asked each day (home Ryzen or work PC), and PROJECT_CONTEXT
+  and CLAUDE.md say so. The work PC's spec and the i5's current role are still `[VERIFY]`.
 
 ## Decisions to record (run `/adr`; ADR-0009 proposed)
 
