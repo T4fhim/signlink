@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Outcome } from "./decoder/index.ts";
 import { RunStats } from "./stats.ts";
 
 /** `count` frames `stepMs` apart, both hands in view unless `hands` says otherwise. */
@@ -147,5 +148,105 @@ describe("RunStats signs", () => {
     const stats = new RunStats();
     feed(stats, 5, 40);
     expect(() => JSON.stringify(stats.report())).not.toThrow();
+  });
+});
+
+describe("RunStats sign log", () => {
+  const logged = (
+    tStart: number,
+    tEnd: number,
+    outcome: Outcome,
+    reason: "quiet" | "max" = "quiet",
+  ) => ({
+    tStart,
+    tEnd,
+    tDetected: tEnd + 220,
+    receivedAt: tEnd + 300,
+    inferMs: 20,
+    paintedAt: outcome === "captioned" ? tEnd + 400 : null,
+    reason,
+    frameCount: 24,
+    outcome,
+    top: [
+      { gloss: "SEE", p: 0.7 },
+      { gloss: "LATER", p: 0.2 },
+    ],
+    otherP: 0.05,
+  });
+
+  it("lists every sign in order with its segment, candidates and what happened to it", () => {
+    const stats = new RunStats();
+    stats.sign(logged(1000, 1800, "captioned"));
+    stats.sign(logged(2500, 3100, "low-confidence"));
+    expect(stats.report().signLog).toEqual([
+      {
+        tEnd: 1800,
+        durationMs: 800,
+        frames: 24,
+        reason: "quiet",
+        outcome: "captioned",
+        top: [
+          { gloss: "SEE", p: 0.7 },
+          { gloss: "LATER", p: 0.2 },
+        ],
+        otherP: 0.05,
+        endToCaptionMs: 400,
+      },
+      expect.objectContaining({
+        tEnd: 3100,
+        durationMs: 600,
+        outcome: "low-confidence",
+        endToCaptionMs: null,
+      }),
+    ]);
+  });
+
+  it("counts the outcomes, with zeros for the ones that did not happen", () => {
+    const stats = new RunStats();
+    stats.sign(logged(1000, 1800, "captioned"));
+    stats.sign(logged(2000, 2600, "other"));
+    stats.sign(logged(3000, 3600, "other"));
+    stats.sign(logged(4000, 4600, "repeat"));
+    expect(stats.report().outcomes).toEqual({
+      captioned: 1,
+      other: 2,
+      "low-confidence": 0,
+      repeat: 1,
+    });
+  });
+
+  it("gives a cut sign no end-to-caption time, as the latency numbers do", () => {
+    const stats = new RunStats();
+    stats.sign(logged(1000, 1600, "captioned", "max"));
+    expect(stats.report().signLog[0]).toMatchObject({ reason: "max", endToCaptionMs: null });
+  });
+
+  it("logs a sign that carries no verdict without inventing one", () => {
+    const stats = new RunStats();
+    stats.sign({
+      tEnd: 1000,
+      tDetected: 1220,
+      receivedAt: 1300,
+      inferMs: 20,
+      paintedAt: null,
+      reason: "quiet",
+    });
+    expect(stats.report().signLog[0]).toMatchObject({
+      tEnd: 1000,
+      durationMs: null,
+      frames: null,
+      outcome: null,
+      top: [],
+      otherP: null,
+    });
+    expect(Object.values(stats.report().outcomes).every((n) => n === 0)).toBe(true);
+  });
+
+  it("starts the log over on reset and survives JSON", () => {
+    const stats = new RunStats();
+    stats.sign(logged(1000, 1800, "captioned"));
+    expect(() => JSON.stringify(stats.report())).not.toThrow();
+    stats.reset();
+    expect(stats.report().signLog).toEqual([]);
   });
 });

@@ -1,4 +1,5 @@
 import { RollingWindow } from "@signlnk/landmarks";
+import type { Outcome } from "./decoder/index.ts";
 
 /**
  * Measurements for the live decoder's Done-when (PLAN §7 Phase 1 step 6): whole-run mean fps and
@@ -38,6 +39,29 @@ export interface SignSample {
   paintedAt: number | null;
   /** "max": cut while the hands still moved, so `tEnd` is not a real sign end (not measured). */
   reason: "quiet" | "max";
+  /** First moving frame of the sign, ms (with `tEnd` gives the segment length the model saw). */
+  tStart?: number;
+  /** Frames in the segment before it was resampled. */
+  frameCount?: number;
+  /** What the decoder did with the sign, and the candidates behind it. */
+  outcome?: Outcome;
+  top?: { gloss: string; p: number }[];
+  otherP?: number;
+}
+
+/** One row of the per-sign log: what was signed (as the model saw it) and why it was or was not captioned. */
+export interface SignLogEntry {
+  tEnd: number;
+  /** Segment length, ms; null when the sample carries no start time. */
+  durationMs: number | null;
+  /** Frames in the segment; null when unknown. */
+  frames: number | null;
+  reason: "quiet" | "max";
+  outcome: Outcome | null;
+  top: { gloss: string; p: number }[];
+  otherP: number | null;
+  /** Sign end to painted caption, ms; null when not captioned or cut while moving. */
+  endToCaptionMs: number | null;
 }
 
 export interface Quantiles {
@@ -67,6 +91,10 @@ export interface RunReport {
   /** Closing frame to the sign arriving on the main thread (landmarks, queueing, model). */
   pipelineMs: Quantiles;
   inferMs: Quantiles;
+  /** Every sign in order: the evidence for tuning the endpointer, threshold and vocabulary. */
+  signLog: SignLogEntry[];
+  /** How many signs ended each way (signs without a verdict are not counted). */
+  outcomes: Record<Outcome, number>;
   targets: {
     fps: { target: number; minDurationMs: number; met: boolean };
     p95LatencyMs: { target: number; minSamples: number; met: boolean };
@@ -82,6 +110,30 @@ function quantiles(values: readonly number[]): Quantiles {
     max: values.length === 0 ? Number.NaN : Math.max(...values),
     count: values.length,
   };
+}
+
+function logEntry(s: SignSample): SignLogEntry {
+  return {
+    tEnd: s.tEnd,
+    durationMs: s.tStart === undefined ? null : s.tEnd - s.tStart,
+    frames: s.frameCount ?? null,
+    reason: s.reason,
+    outcome: s.outcome ?? null,
+    top: s.top ?? [],
+    otherP: s.otherP ?? null,
+    endToCaptionMs: s.reason === "quiet" && s.paintedAt !== null ? s.paintedAt - s.tEnd : null,
+  };
+}
+
+function countOutcomes(signs: readonly SignSample[]): Record<Outcome, number> {
+  const counts: Record<Outcome, number> = {
+    captioned: 0,
+    other: 0,
+    "low-confidence": 0,
+    repeat: 0,
+  };
+  for (const s of signs) if (s.outcome !== undefined) counts[s.outcome]++;
+  return counts;
 }
 
 export class RunStats {
@@ -143,6 +195,8 @@ export class RunStats {
       decoderWaitMs: quantiles(atRest.map((s) => s.tDetected - s.tEnd)),
       pipelineMs: quantiles(this.signs.map((s) => s.receivedAt - s.tDetected)),
       inferMs: quantiles(this.signs.map((s) => s.inferMs)),
+      signLog: this.signs.map(logEntry),
+      outcomes: countOutcomes(this.signs),
       targets: {
         fps: {
           target: TARGET_FPS,

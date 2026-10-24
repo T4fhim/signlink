@@ -88,7 +88,11 @@ describe("InferenceHost", () => {
     let pending: PendingSign | null = null;
     for (const { t, frame } of stream()) pending = decoder.push(t, frame) ?? pending;
     const { logits } = await recognizer.run((pending as PendingSign).input, 1);
-    expect(sign.caption).toEqual(decoder.interpret(pending as PendingSign, logits));
+    const verdict = decoder.decide(pending as PendingSign, logits);
+    expect(sign.caption).toEqual(verdict.caption);
+    expect(sign.outcome).toBe(verdict.outcome);
+    expect(sign.top).toEqual(verdict.top);
+    expect(sign.otherP).toBe(verdict.otherP);
     await recognizer.dispose();
     await host.handle({ type: "dispose" });
   });

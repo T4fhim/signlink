@@ -1,4 +1,10 @@
-export { Decoder, type DecoderConfig, type PendingSign } from "./decoder.ts";
+export {
+  Decoder,
+  type DecoderConfig,
+  type Outcome,
+  type PendingSign,
+  type Verdict,
+} from "./decoder.ts";
 export {
   DEFAULT_ENDPOINTER,
   Endpointer,

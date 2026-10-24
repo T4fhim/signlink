@@ -77,15 +77,19 @@ export class InferenceHost {
     const started = performance.now();
     const { logits } = await recognizer.run(sign.input, 1);
     const inferMs = performance.now() - started;
+    const verdict = decoder.decide(sign, logits);
     this.post({
       type: "sign",
-      caption: decoder.interpret(sign, logits),
+      caption: verdict.caption,
       tStart: sign.tStart,
       tEnd: sign.tEnd,
       tDetected: sign.tDetected,
       frameCount: sign.frameCount,
       reason: sign.reason,
       inferMs,
+      outcome: verdict.outcome,
+      top: verdict.top,
+      otherP: verdict.otherP,
     });
   }
 

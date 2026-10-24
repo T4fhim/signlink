@@ -107,6 +107,54 @@ describe("Decoder.interpret", () => {
   });
 });
 
+describe("Decoder.decide", () => {
+  it("explains a caption: outcome, ranked candidates, <other> probability", () => {
+    const logits = Float32Array.from([4, 1, 0, 0, -2]);
+    const verdict = new Decoder(config()).decide(pending(), logits);
+    const p = softmax([4, 1, 0, 0, -2]); // hello, thankyou, yes, no, <other>
+    expect(verdict.outcome).toBe("captioned");
+    expect(verdict.caption?.gloss).toBe("HELLO");
+    expect(verdict.top.map((t) => t.gloss)).toEqual(["HELLO", "THANKYOU", "YES"]);
+    expect(verdict.top[0]?.p).toBeCloseTo(p[0] as number, 5);
+    expect(verdict.otherP).toBeCloseTo(p[4] as number, 5);
+  });
+
+  it("names why nothing was captioned", () => {
+    const decoder = new Decoder(config());
+    const other = decoder.decide(pending(), Float32Array.from([1, 1, 0, 0, 5]));
+    expect(other.outcome).toBe("other");
+    expect(other.caption).toBeNull();
+    const low = decoder.decide(pending(), Float32Array.from([1, 0.9, 0.8, 0.7, -9]));
+    expect(low.outcome).toBe("low-confidence");
+    expect(low.caption).toBeNull();
+    // the rejected sign is still explained: its candidates are listed
+    expect(low.top).toHaveLength(3);
+  });
+
+  it("reports a repeat within debounceMs as its own outcome", () => {
+    const decoder = new Decoder(config());
+    const hello = Float32Array.from([6, 0, 0, 0, 0]);
+    expect(decoder.decide(pending(1000, 1800), hello).outcome).toBe("captioned");
+    const again = decoder.decide(pending(2200, 2800), hello);
+    expect(again.outcome).toBe("repeat");
+    expect(again.caption).toBeNull();
+    expect(again.top[0]?.gloss).toBe("HELLO");
+  });
+
+  it("agrees with interpret on the same sequence of signs", () => {
+    const a = new Decoder(config());
+    const b = new Decoder(config());
+    const hello = Float32Array.from([6, 0, 0, 0, 0]);
+    for (const [s, e] of [
+      [1000, 1800],
+      [2200, 2800],
+      [4000, 4600],
+    ] as const) {
+      expect(a.decide(pending(s, e), hello).caption).toEqual(b.interpret(pending(s, e), hello));
+    }
+  });
+});
+
 describe("Decoder construction", () => {
   it.each([
     ["an unknown sign", ["hello", "nope"]],

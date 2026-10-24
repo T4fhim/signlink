@@ -99,6 +99,11 @@ How the report counts latency: a sign cut at `maxSignMs` while the hands still m
 of `signEndToCaptionMs` and `decoderWaitMs`. The latency target counts as met only with at least 20
 captioned signs, because below that a nearest-rank p95 is just the maximum.
 
+The downloaded report also carries `signLog` (every sign: segment length in ms and frames, why it was
+or was not captioned (`captioned`, `other`, `low-confidence`, `repeat`), the top candidates over the
+vocabulary, the `<other>` probability, sign end to caption) and `outcomes` (counts per reason). It holds
+glosses, probabilities and timestamps only; use it to see why a signed phrase lost a sign.
+
 How to measure on the day's benchmark PC: `pnpm install`, `pnpm assets`,
 `node scripts/stage-model.mjs <run-dir> --vocab ml/vocab/draft-meeting-wishlist.yaml --size 20`
 (`--size` keeps the first N signs, so runs match the 20-sign proxy), `pnpm dev`, open `/dev/decode`, start, sign for ≥ 60 s with both hands, download the report (suggested home:

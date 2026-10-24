@@ -33,6 +33,19 @@ export interface PendingSign {
   reason: "quiet" | "max";
 }
 
+/** Why a sign did or did not become a caption. */
+export type Outcome = "captioned" | "other" | "low-confidence" | "repeat";
+
+/** The decoder's decision for one sign, with the evidence behind it. */
+export interface Verdict {
+  caption: RecognitionOutputV1 | null;
+  outcome: Outcome;
+  /** Best `topK` signs over the vocabulary (masked softmax), best first. */
+  top: { gloss: string; p: number }[];
+  /** Masked-softmax probability of `<other>`. */
+  otherP: number;
+}
+
 /**
  * Live decoder core, free of the model runtime so it can run on any thread.
  *
@@ -81,6 +94,14 @@ export class Decoder {
 
   /** Caption for a sign given the model's logits for it, or null when nothing should be shown. */
   interpret(sign: PendingSign, logits: Float32Array): RecognitionOutputV1 | null {
+    return this.decide(sign, logits).caption;
+  }
+
+  /**
+   * Like `interpret`, but also says why a sign was or was not captioned and lists the candidates
+   * (for the per-sign log of the measurement report). Advances the debounce state exactly once.
+   */
+  decide(sign: PendingSign, logits: Float32Array): Verdict {
     const { model, language, topK } = this.config;
     if (logits.length !== model.classes.length) {
       throw new RangeError(`expected ${model.classes.length} logits, got ${logits.length}`);
@@ -93,8 +114,13 @@ export class Decoder {
     const ranked = this.signs
       .map((index, k) => ({ index, p: (weights[k] ?? 0) / total }))
       .sort((a, b) => b.p - a.p);
+    const candidates = ranked.slice(0, topK).map((r) => ({ gloss: this.glossOf(r.index), p: r.p }));
     const best = ranked[0];
-    if (!best || otherP >= best.p || best.p < this.config.minConfidence) return null;
+    if (!best || otherP >= best.p)
+      return { caption: null, outcome: "other", top: candidates, otherP };
+    if (best.p < this.config.minConfidence) {
+      return { caption: null, outcome: "low-confidence", top: candidates, otherP };
+    }
 
     const previous = this.last;
     this.last = { sign: best.index, tEnd: sign.tEnd };
@@ -103,10 +129,10 @@ export class Decoder {
       previous.sign === best.index &&
       sign.tStart - previous.tEnd < this.config.debounceMs
     ) {
-      return null;
+      return { caption: null, outcome: "repeat", top: candidates, otherP };
     }
     const glossId = (index: number): string => `${language}:${this.glossOf(index)}`;
-    return {
+    const caption: RecognitionOutputV1 = {
       gloss: this.glossOf(best.index),
       gloss_id: glossId(best.index),
       confidence: best.p,
@@ -116,6 +142,7 @@ export class Decoder {
       model_version: this.config.modelVersion,
       lexicon_version: this.config.lexiconVersion,
     };
+    return { caption, outcome: "captioned", top: candidates, otherP };
   }
 
   /** Forgets the open sign and the debounce state (camera restart, vocabulary change). */

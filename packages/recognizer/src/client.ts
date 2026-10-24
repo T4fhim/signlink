@@ -102,6 +102,9 @@ export class RecognizerClient {
         frameCount: message.frameCount,
         reason: message.reason,
         inferMs: message.inferMs,
+        outcome: message.outcome,
+        top: message.top,
+        otherP: message.otherP,
         receivedAt: performance.now(),
       });
     } else if (message.type === "logits") {

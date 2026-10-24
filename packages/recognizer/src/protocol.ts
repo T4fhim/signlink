@@ -1,5 +1,5 @@
 import type { RecognitionOutputV1 } from "@signlnk/schemas/recognition_output_v1";
-import type { DecoderConfig } from "./decoder/index.ts";
+import type { DecoderConfig, Outcome } from "./decoder/index.ts";
 
 /**
  * Messages between the main thread and the inference worker. Timestamps (`t`, `tStart`, ...) are
@@ -54,6 +54,12 @@ export interface SignMessage {
   reason: "quiet" | "max";
   /** Model run time for this sign, ms. */
   inferMs: number;
+  /** Why the sign did or did not become a caption (for the report's per-sign log). */
+  outcome: Outcome;
+  /** Best candidates over the vocabulary, best first. */
+  top: { gloss: string; p: number }[];
+  /** Probability of `<other>` over the vocabulary plus `<other>`. */
+  otherP: number;
 }
 export interface LogitsMessage {
   type: "logits";
