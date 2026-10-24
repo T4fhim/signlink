@@ -33,6 +33,7 @@ reasoning: `docs/WORKFLOW.md` §8.
 | Hook | `guard-paths.mjs` (PreToolUse) | Blocks edits to generated types, lockfiles, MediaPipe assets, `.env`, recordings/landmark data, NC data in `lexicon/core/` |
 | Hook | `post-edit.mjs` (PostToolUse) | Prettier / ruff format; rule reminders (schemas, normalization, layout, `track:`, deps) |
 | Hook | `session-context.mjs` (SessionStart) | Branch, dirty files, current phase; hard rules after compaction |
+| Hook | `daily-benchmark-pc.mjs` (SessionStart, UserPromptSubmit) | Once per day: asks which PC is the benchmark, records it in gitignored `CLAUDE.local.md` |
 | Hook | `stop-gate.mjs` (Stop) | Blocks on stale generated types or missing `track:` |
 | Hook | `prompt-router.mjs` (UserPromptSubmit) | Points a matching prompt to the right skill/subagent/gate; flags later-phase work |
 | Rules | `.claude/rules/{landmarks,schemas,ml,web-privacy,lexicon-data,api,claude-config}.md` | Path-scoped instructions that load only when matching files are read or edited (WORKFLOW §8) |

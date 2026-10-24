@@ -27,7 +27,7 @@ and non-signing users. Self-hostable, privacy-first, works without paid APIs.
 - Target sign language: **ASL (`ase`) only**. Pipeline stays language-agnostic (config value).
 - Spoken/written language pair: **ASL ↔ English (`en`)**
 - Deaf/signing advisors: **recruit ≥2 fluent Deaf ASL signers before the public demo** (none yet)
-- Hardware: **no local GPU assumed → Kaggle / Colab free tiers**; benchmark laptop: **this machine** — i5-1135G7 (4C/8T), 15.7 GB, Iris Xe, Windows 11
+- Hardware: **no local GPU assumed → Kaggle / Colab free tiers**; benchmark PC: **asked each day** (it alternates between home and work PC; today's answer is in the gitignored `CLAUDE.local.md`, see CLAUDE.md). Home PC: AMD Ryzen 7 7840H (8C/16T), Windows 11 `[VERIFY RAM/GPU]`. Work PC: `[VERIFY spec]`. The i5-1135G7 (4C/8T, 15.7 GB, Iris Xe) is where the Phase 0 numbers and ADR-0001/0004 were measured; its role now `[VERIFY]`. Every benchmark report names the machine
 - Project license: **Apache-2.0 (code)**; models/data have their own license files
 - Commercial use: **not now, door open → two data tracks** (release = permissive only; research = NC allowed)
 - Phase 1 vocab: **20–50 meeting-relevant signs**, chosen by signer advisors
@@ -116,12 +116,15 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 
 - 2026-10-19 — Exported model is the full 251-class recognizer as one ONNX file (torch dynamo exporter, opset 18, dynamic batch); export refuses non-release runs (ADR-0003); parity file contract `slk-parity-v1`; no int8 until latency/accuracy evidence
 
+- 2026-10-24 — The benchmark PC is chosen per day (home Ryzen 7 7840H or work PC), asked at the first task of each day; reports must name the machine
+
 ## Open questions / risks
 - onnxruntime-web: parity was shown on the Node wasm build; a browser must import `onnxruntime-web/wasm` (the default browser import uses the untested `.jsep.wasm`), self-host the wasm (`wasmPaths`), and re-check parity once in the browser (step 6); ship ONNX Runtime's LICENSE/ThirdPartyNotices with the wasm (step 7)
 - `reference_aspect=0.78` calibrated on one webcam; one fresh clip from a second camera passes parity (2026-10-06). More cameras still welcome, not blocking
 - ADR-0003: the config track check exists (`check_config`, run by `train.py` and CI); the export refusal (PLAN §5.1) is not built yet, it arrives with the ONNX export (Phase 1 step 5)
 - Holistic↔Tasks face-index identity `[VERIFY]` (ADR-0004); hand side now follows the pose wrist (ADR-0008)
-- Landmark fps with a hand in view is 24.4–26.8; Phase 1 step 6 must show ≥25 fps with inference running
+- Landmark fps with a hand in view was 24.4–26.8 (i5, Phase 0). Step 6 whole-run mean on the home PC (Ryzen 7 7840H, Chrome 155, GPU delegate, pose/face every 2nd frame, inference running): 42.2 fps over 208 s, but hands in view in only 45% of frames and both in 3.5%, so the rate while signing is not isolated; the same run on the other PC is untested
+- Step 6 latency: p95 sign-end → caption 319.5 ms on the home PC, from only 13 clean signs (≥20 needed to count); live recognition was visibly inaccurate on real signing (see `docs/reports/phase1-step6-decoder.md`)
 - Hand z span looks ~2× smaller in browser clips (0.035–0.062) than Kaggle (median 0.102) `[VERIFY]` on real signing; start with hand x/y or a z ablation
 - MediaPipe `.task` model licences unverified `[VERIFY]` before Phase 1 step 7 (`docs/datasets.md`)
 - numpy pinned to 2.4.6 (2.5.x needs Python ≥3.12; project keeps 3.11+, but CI runs 3.12.3 and nothing tests 3.11)
