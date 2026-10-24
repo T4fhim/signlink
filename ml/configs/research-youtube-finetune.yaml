@@ -1,0 +1,17 @@
+# Research-track experiment (not a product model): fine-tune the Kaggle-only baseline on clips cut
+# from YouTube ASL tutorial videos, leave-one-video-out. See docs/reports/phase1-youtube-probe.md.
+# Never exported or staged: a model trained on these videos must not reach a release bundle (ADR-0003).
+track: research
+datasets: [kaggle-islr, youtube-tutorial-videos, youtube-cc-by-learnsigns]
+pretrained: [] # the starting point is our own release-track baseline, not external weights
+base_run: seeds/runs/seed1 # under $SIGNLNK_DATA_DIR/kaggle-islr
+cache: sample-cache # Kaggle sample windows kept as replay against forgetting
+
+finetune:
+  epochs: 20
+  batch_size: 64
+  lr: 0.0001
+  weight_decay: 0.01
+  label_smoothing: 0.1
+  clip_repeat: 5 # each video clip appears this many times per epoch (augmented differently)
+  seeds: [1, 2, 3]

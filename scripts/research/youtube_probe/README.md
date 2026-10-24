@@ -31,5 +31,10 @@ Stage 1 (label-free segmentation with the decoder's endpointer, several videos; 
 more): `SIGNLNK_DATA_DIR=... uv run --no-sync python scripts/research/youtube_probe/probe_stage1.py`.
 It expects each video's `full/` folder from step 2 and its caption file; writes `probe_stage1.json`.
 
+Fine-tune experiment (leave-one-video-out, CPU, research track; needs the Kaggle sample cache
+`python -m signlnk_ml.training.cache --sample --out-dir $SIGNLNK_DATA_DIR/kaggle-islr/sample-cache`):
+`SIGNLNK_DATA_DIR=... uv run --no-sync python scripts/research/youtube_probe/finetune_loo.py`, config
+`ml/configs/research-youtube-finetune.yaml`. Writes `finetune_loo.json`; saves no model.
+
 `probe_25.py` hard-codes this one video's caption times and the gloss-to-class mapping (`[VERIFY]`
 by a fluent signer). For another video, edit `SIGNS` and `END`.

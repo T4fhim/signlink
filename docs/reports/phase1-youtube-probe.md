@@ -83,6 +83,32 @@ Caveats: anchors are noisy (a colour named in an explanation counts); the gloss-
 **[VERIFY]**; some Kaggle sign variants may differ from the teachers' (for example brother, grandma);
 two of the three videos are probably one signer, so this is closer to 2 signers than 3.
 
+## Fine-tune result (2026-10-25): leave-one-video-out, no gain at this size
+
+Machine: home PC, CPU, 19 min. Command:
+`SIGNLNK_DATA_DIR=D:\signlnk-data uv run --no-sync python scripts/research/youtube_probe/finetune_loo.py`
+(config `ml/configs/research-youtube-finetune.yaml`, `track: research`). Start: the Kaggle-only
+baseline `seeds/runs/seed1`. For each held-out video, fine-tune 20 epochs (lr 1e-4) on the caption-anchored
+clips of the other two (63 to 67 clips, each repeated 5 times with augmentation) mixed with the 378 Kaggle
+sample windows as replay; control = replay only, same settings; 3 seeds each. Scored on the held-out
+video's anchors as in stage 1. Numbers are anchors correct, mean of 3 seeds for control and fine-tuned.
+
+| Held-out video (anchors) | Metric | Base | Control | Fine-tuned |
+|---|---|---|---|---|
+| Learn How to Sign (35) | top-1, masked | 20 | 19.0 | 19.0 |
+| | top-1, 250 classes | 12 | 14.0 | 12.7 |
+| LearnSigns Family (31) | top-1, masked | 9 | 9.0 | 8.3 |
+| | top-1, 250 classes | 5 | 3.0 | 4.3 |
+| LearnSigns Colors (32) | top-1, masked | 12 | 11.7 | 13.3 |
+| | top-1, 250 classes | 4 | 4.0 | 2.0 |
+
+Kaggle sample validation top-1 (75 windows) went from 0.684 to 0.667, 0.662 and 0.645 in the three folds
+(slight forgetting). Reading: **no measurable gain**; every difference is within a clip or two of the
+control and inside seed noise (about 1 anchor between seeds). Expected at this size: about 65 labelled
+clips from at most two signers, with noisy caption labels, cannot move a model that overfits 15 training
+signers, and the held-out videos mostly contain signs the training clips never show. It says nothing
+against the idea with many signers; it says three videos are far too few to test it.
+
 ## Verdict: how good an alternative is this?
 
 - **Replacement for fluent-signer data: no.** One video is one signer (Kaggle has 21; the baseline still
