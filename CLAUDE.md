@@ -4,10 +4,10 @@ Free, open-source, on-device bridge between ASL signers and English speakers. Cu
 decisions and interfaces: @PROJECT_CONTEXT.md
 
 ## At the start of every task
-0. Benchmark PC: if `CLAUDE.local.md` has no "Benchmark PC" line dated today, ask which PC (home Ryzen
-   or work) is today's benchmark before anything else, then write the line there (gitignored; the
-   `daily-benchmark-pc` hook reminds you). Name
-   that machine in every benchmark or latency number you report.
+0. Benchmark PC: if `CLAUDE.local.md` has no "Benchmark PC" line for today's slot (before 10:15 =
+   `am`, from 10:15 = `pm`, when the user moves to the work PC), ask which PC (home Ryzen or work) is the
+   benchmark before anything else, then write the line there (gitignored; the `daily-benchmark-pc`
+   hook reminds you). Name that machine in every benchmark or latency number you report.
 1. Check the task against **Current phase** (in PROJECT_CONTEXT above). Later-phase work: flag it
    in one line and offer only the minimum needed now.
 2. Find the task's row in "Read and use when" below and follow it before acting.

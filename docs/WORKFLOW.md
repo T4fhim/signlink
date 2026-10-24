@@ -134,7 +134,7 @@ outgrows subagents. Parallel sessions multiply token use.
 | `guard-paths.mjs` | PreToolUse Edit/Write | No hand edits to generated types, lockfiles, MediaPipe assets, `.env`; no recordings/landmark data in the repo; no ASL-LEX/Signbank data in `lexicon/core/` |
 | `post-edit.mjs` | PostToolUse Edit/Write | Prettier/ruff format; reminders for schema (rule 5), normalization (rule 6), layout, `track:` (rule 4), dependency licences (rule 1) |
 | `session-context.mjs` | SessionStart | Branch, dirty files, phase; hard rules after compaction |
-| `daily-benchmark-pc.mjs` | SessionStart, UserPromptSubmit | Silent when `CLAUDE.local.md` has a "Benchmark PC" line dated today; otherwise tells Claude to ask which PC is today's benchmark and record it there (first session or prompt of each day) |
+| `daily-benchmark-pc.mjs` | SessionStart, UserPromptSubmit | Silent when `CLAUDE.local.md` has a "Benchmark PC" line for today's slot (`am` before 10:15, `pm` from 10:15; a date-only line counts as `am`); otherwise tells Claude to ask which PC is the benchmark and record it there (first session or prompt of each slot) |
 | `prompt-router.mjs` | UserPromptSubmit | Silent unless the prompt matches a situation; then points to the skill/subagent/gate (datasets, schemas, commits, steps, phase gates, session end, decisions, Deaf-facing output, privacy, dependencies) and flags later-phase work |
 | `stop-gate.mjs` | Stop | Blocks on stale generated types or a config without `track:`; reminds on one-sided normalization changes |
 
