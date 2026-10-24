@@ -1,7 +1,8 @@
 # SignLnk (working name) — Project Context
 Last updated: 2026-10-05
 Long-form plan: `docs/PLAN.md` · How we work with Claude: `docs/WORKFLOW.md` ·
-Toolkit: `docs/TOOLKIT.md` · History: `docs/CHANGELOG.md` · Datasets: `docs/datasets.md`
+Toolkit: `docs/TOOLKIT.md` · History: `docs/CHANGELOG.md` · Datasets: `docs/datasets.md` ·
+Latest handoff: `docs/sessions/2026-10-23-to-25-home-pc.md`
 
 Keep this file lean: it is imported into every Claude Code session through CLAUDE.md.
 Current state and decisions go here; history goes in the changelog.
@@ -116,7 +117,7 @@ Not used: meeting bots, DOM-scraping extensions, Meet Media API (restricted deve
 
 - 2026-10-19 — Exported model is the full 251-class recognizer as one ONNX file (torch dynamo exporter, opset 18, dynamic batch); export refuses non-release runs (ADR-0003); parity file contract `slk-parity-v1`; no int8 until latency/accuracy evidence
 
-- 2026-10-24 — YouTube tutorial landmarks probe (research track only): stage 1, label-free segmentation, 3 videos: masked top-1 41/98 (42%), top-5 over 250 classes 35/98, worst on new signers (29 to 38%); usable domain with a real gap, not an accuracy number; stages and stop conditions in `docs/reports/phase1-youtube-probe.md`
+- 2026-10-24 — YouTube tutorial landmarks probe (research track only): stage 1, label-free segmentation, 3 videos: masked top-1 41/98 (42%), top-5 over 250 classes 35/98, worst on new signers (29 to 38%); usable domain with a real gap, not an accuracy number; leave-one-video-out fine-tune on about 65 clips showed no gain over a replay-only control (too few signers to test it); details in `docs/reports/phase1-youtube-probe.md`
 
 - 2026-10-24 — The benchmark PC is chosen per day (home Ryzen 7 7840H or work PC), asked at the first task of each day and again from 10:15 (the move to the work PC, 2026-10-25); reports must name the machine
 
