@@ -19,3 +19,6 @@ wlasl:
 how2sign:
   track: research
   licence: "Non-commercial"
+youtube-tutorial-videos:
+  track: research
+  licence: "Standard YouTube licence (yt-dlp license=NA) unless a video is Creative Commons; local research use only, never redistributed (docs/datasets.md)"

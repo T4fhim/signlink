@@ -69,6 +69,32 @@ A shipped model trained on Kaggle ISLR (release track) needs a model card with t
 above and a copy of the Rules text, and `model.json` should carry the attribution string (not built
 yet, Phase 1 step 7).
 
+## YouTube tutorial videos (`youtube-tutorial-videos`)
+
+| Field | Value |
+|---|---|
+| Source | https://www.youtube.com/watch?v=0FcwzMq4iWg ("25 ASL Signs You Need to Know", channel Learn How to Sign, uploaded 2021-03-23) |
+| Content | One 394 s video, one signer, English captions with the gloss in capitals; only extracted landmarks (`slk-landmarks-v1`) and the caption text are kept alongside the video |
+| Files used | `video.mp4`, `video.en.json3`, `video.info.json`, `full/{landmarks,present}.npy`, `full/meta.json`, `probe.json` |
+| Downloaded | 2026-10-24 with `yt-dlp` 2026.10.21 |
+| Location | `D:\signlnk-data\research-videos\0FcwzMq4iWg`; never committed |
+| Track | **research** |
+
+**Licence as found:** `yt-dlp --print license` returned `NA`, i.e. the standard YouTube licence, not
+Creative Commons (read 2026-10-24). No permission from the creator. The project owner decided on
+2026-10-24 to use it locally for research only and to credit the channel in the README and portfolio;
+crediting is not a licence.
+
+Consequences:
+- Research track only (ADR-0003): never in a release model, bundle or public data pack; the video and
+  landmarks are never redistributed.
+- Landmarks are personal data (face points): they stay on this machine.
+- Gloss-to-class mapping is unverified until a fluent signer checks it.
+- Any further video needs its own entry or a line here, with its licence read via
+  `yt-dlp --print license`; prefer Creative Commons.
+
+Result and next steps: `docs/reports/phase1-youtube-probe.md`.
+
 ## Not yet downloaded
 
 Own Studio recordings (release track) have no data yet. Contributors consent under CC BY 4.0; a
